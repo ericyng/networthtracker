@@ -8,8 +8,8 @@
 {% block page_actions %}
     <div class="d-flex align-items-center">
         <!-- Month/Year Filter -->
-        <form method="get" class="d-flex me-3">
-            <select name="month" class="form-select form-select-sm me-2" style="width: auto;">
+        <form method="get" class="d-flex me-3" id="monthYearForm">
+            <select name="month" class="form-select form-select-sm me-2" style="width: auto;" id="monthSelect">
                 <option value="1" {% if selected_month == 1 %}selected{% endif %}>January</option>
                 <option value="2" {% if selected_month == 2 %}selected{% endif %}>February</option>
                 <option value="3" {% if selected_month == 3 %}selected{% endif %}>March</option>
@@ -23,7 +23,7 @@
                 <option value="11" {% if selected_month == 11 %}selected{% endif %}>November</option>
                 <option value="12" {% if selected_month == 12 %}selected{% endif %}>December</option>
             </select>
-            <select name="year" class="form-select form-select-sm me-2" style="width: auto;">
+            <select name="year" class="form-select form-select-sm me-2" style="width: auto;" id="yearSelect">
                 {% for year in "2020,2021,2022,2023,2024,2025,2026"|split:"," %}
                     <option value="{{ year }}" {% if selected_year == year|add:0 %}selected{% endif %}>{{ year }}</option>
                 {% endfor %}
@@ -31,9 +31,6 @@
             <!-- Preserve sort parameters -->
             <input type="hidden" name="sort" value="{{ sort_by }}">
             <input type="hidden" name="order" value="{{ order }}">
-            <button type="submit" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-eye me-1"></i>Show
-            </button>
         </form>
     </div>
 {% endblock %}
@@ -187,4 +184,22 @@
             </p>
         </div>
     {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    const form = document.getElementById('monthYearForm');
+    
+    // Auto-submit form when month or year changes
+    function autoSubmit() {
+        form.submit();
+    }
+    
+    monthSelect.addEventListener('change', autoSubmit);
+    yearSelect.addEventListener('change', autoSubmit);
+});
+</script>
 {% endblock %} 

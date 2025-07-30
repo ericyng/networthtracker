@@ -617,6 +617,18 @@ class AccountEntriesViewsTest(TestCase):
         self.assertEqual(response.context['selected_month'], 1)
         self.assertEqual(response.context['selected_year'], 2024)
         
+    def test_account_entries_template_has_auto_submit_js(self):
+        """Test that the template includes JavaScript for auto-submit functionality"""
+        self.client.login(username='testuser', password='testpass123')
+        response = self.client.get(reverse('dashboard:account_entries'))
+        self.assertEqual(response.status_code, 200)
+        
+        # Check that the template includes the necessary JavaScript
+        self.assertContains(response, 'autoSubmit')
+        self.assertContains(response, 'monthSelect')
+        self.assertContains(response, 'yearSelect')
+        self.assertContains(response, 'addEventListener')
+        
     def test_account_entries_post(self):
         """Test account entries POST request"""
         self.client.login(username='testuser', password='testpass123')
