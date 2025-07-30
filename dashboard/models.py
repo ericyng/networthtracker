@@ -56,6 +56,7 @@ class Account(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+        unique_together = ['user', 'name']
     
     def __str__(self):
         return f"{self.name} ({self.account_type}) - {self.user.username}"
