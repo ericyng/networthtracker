@@ -105,9 +105,17 @@ def dashboard(request):
     
     # Generate data for the last 12 months
     for i in range(11, -1, -1):  # 11 to 0 (last 12 months)
-        target_date = current_date - timedelta(days=30*i)
-        month = target_date.month
-        year = target_date.year
+        # Calculate the target month properly
+        target_month = current_date.month - i
+        target_year = current_date.year
+        
+        # Handle month rollover
+        while target_month <= 0:
+            target_month += 12
+            target_year -= 1
+        
+        month = target_month
+        year = target_year
         
         # Get total balance for this month/year (for bar chart)
         monthly_balance = AccountEntry.objects.filter(
@@ -135,15 +143,20 @@ def dashboard(request):
         
         monthly_net_worth = monthly_assets + monthly_debts  # debts are negative
         
+        # Create proper month label
+        month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        month_label = f"{month_names[month-1]} {year}"
+        
         chart_data.append({
-            'month': target_date.strftime('%b %Y'),
+            'month': month_label,
             'balance': float(monthly_balance),
             'month_num': month,
             'year': year
         })
         
         line_chart_data.append({
-            'month': target_date.strftime('%b %Y'),
+            'month': month_label,
             'net_worth': float(monthly_net_worth),
             'assets': float(monthly_assets),
             'debts': float(abs(monthly_debts)),  # Show as positive for display
