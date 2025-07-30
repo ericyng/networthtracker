@@ -892,4 +892,14 @@ def support(request):
     return render(request, 'dashboard/support.html')
 
 
+def terms_of_service(request):
+    """View for Terms of Service page"""
+    return render(request, 'dashboard/terms_of_service.html')
+
+
+def privacy_policy(request):
+    """View for Privacy Policy page"""
+    return render(request, 'dashboard/privacy_policy.html')
+
+
 

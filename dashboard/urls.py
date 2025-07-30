@@ -34,4 +34,8 @@ urlpatterns = [
     
     # Support URL
     path('support/', views.support, name='support'),
+    
+    # Legal URLs
+    path('terms/', views.terms_of_service, name='terms_of_service'),
+    path('privacy/', views.privacy_policy, name='privacy_policy'),
 ] 

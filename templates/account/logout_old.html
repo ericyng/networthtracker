@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Out - NetWorth Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .logout-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .logout-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .logout-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .logout-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        
+        .logout-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .logout-body {
+            padding: 40px 30px;
+        }
+        
+        .logout-message {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logout-message .icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .logout-message h2 {
+            color: #333;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .logout-message p {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .btn-outline-primary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 20px;
+        }
+        
+        .logout-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .logout-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .logout-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .brand-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .form-check {
+            margin-bottom: 20px;
+        }
+        
+        .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="logout-container">
+        <div class="logout-card">
+            <div class="logout-header">
+                <div class="brand-icon">💰</div>
+                <h1>NetWorth Tracker</h1>
+                <p>Sign out of your account</p>
+            </div>
+            
+            <div class="logout-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <div class="logout-message">
+                    <div class="icon">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </div>
+                    <h2>Ready to sign out?</h2>
+                    <p>Are you sure you want to sign out of your NetWorth Tracker account?</p>
+                </div>
+                
+                <form method="post" action="{% url 'account_logout' %}">
+                    {% csrf_token %}
+                    
+                    {% if redirect_field_value %}
+                        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                    {% endif %}
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" 
+                               type="checkbox" 
+                               id="id_remember" 
+                               name="remember" 
+                               checked>
+                        <label class="form-check-label" for="id_remember">
+                            Remember me for next time
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-right me-2"></i>Sign Out
+                    </button>
+                </form>
+                
+                <a href="{% url 'dashboard:dashboard' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Cancel & Return to Dashboard
+                </a>
+                
+                <div class="logout-footer">
+                    <p class="mb-0">
+                        Changed your mind? 
+                        <a href="{% url 'dashboard:dashboard' %}">Return to dashboard</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
