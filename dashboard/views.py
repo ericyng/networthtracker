@@ -226,22 +226,37 @@ def accounts_list(request):
         if account.classification != 'debts' and account.account_type != 'loan'
     )
     
-    # Group accounts by classification and calculate totals
-    accounts_by_classification = {}
-    classification_totals = {}
+    # Group accounts into custom categories and calculate totals
+    accounts_by_category = {}
+    category_totals = {}
     
     for account in accounts:
-        classification = account.get_classification_display()
-        if classification not in accounts_by_classification:
-            accounts_by_classification[classification] = []
-            classification_totals[classification] = 0
-        accounts_by_classification[classification].append(account)
-        classification_totals[classification] += account.get_latest_balance()
+        balance = account.get_latest_balance()
+        
+        # Determine category based on account type and classification
+        if account.account_type in ['checking', 'savings']:
+            category = 'Cash'
+        elif account.account_type == 'investment' and account.classification not in ['pretax', 'posttax', 'roth', 'traditional', '401k', 'hsa', '529', 'fsa']:
+            category = 'Equity & Investments'
+        elif account.classification in ['pretax', 'posttax', 'roth', 'traditional', '401k', 'hsa', '529', 'fsa']:
+            category = 'Retirement'
+        elif account.asset_type == 'property':
+            category = 'Property'
+        elif account.classification == 'debts' or account.account_type in ['loan', 'credit']:
+            category = 'Debts'
+        else:
+            category = 'Other'
+        
+        if category not in accounts_by_category:
+            accounts_by_category[category] = []
+            category_totals[category] = 0
+        accounts_by_category[category].append(account)
+        category_totals[category] += balance
     
     context = {
         'accounts': accounts,
-        'accounts_by_classification': accounts_by_classification,
-        'classification_totals': classification_totals,
+        'accounts_by_category': accounts_by_category,
+        'category_totals': category_totals,
         'total_balance': total_balance,
         'total_debts': total_debts,
         'total_assets': total_assets,
