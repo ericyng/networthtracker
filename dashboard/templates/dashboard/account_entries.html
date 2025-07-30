@@ -32,6 +32,11 @@
             <input type="hidden" name="sort" value="{{ sort_by }}">
             <input type="hidden" name="order" value="{{ order }}">
         </form>
+        
+        <!-- Clear Data Button -->
+        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#clearDataModal">
+            <i class="bi bi-trash me-1"></i>Clear Data
+        </button>
     </div>
 {% endblock %}
 
@@ -184,6 +189,36 @@
             </p>
         </div>
     {% endif %}
+    
+    <!-- Clear Data Modal -->
+    <div class="modal fade" id="clearDataModal" tabindex="-1" aria-labelledby="clearDataModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="clearDataModalLabel">
+                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>Clear Account Entries
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to clear all account entries for <strong>{{ selected_month|month_name }} {{ selected_year }}</strong>?</p>
+                    <p class="text-muted mb-0">This will set all balance fields to 0.00 and clear all notes for this month.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="clear_data">
+                        <input type="hidden" name="sort" value="{{ sort_by }}">
+                        <input type="hidden" name="order" value="{{ order }}">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i>Clear All Data
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block extra_js %}

@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
@@ -401,8 +402,12 @@ def account_entries(request):
     current_year = timezone.now().year
     
     # Get selected month/year from request
-    selected_month = int(request.GET.get('month', current_month))
-    selected_year = int(request.GET.get('year', current_year))
+    if request.method == 'POST':
+        selected_month = int(request.POST.get('month', request.GET.get('month', current_month)))
+        selected_year = int(request.POST.get('year', request.GET.get('year', current_year)))
+    else:
+        selected_month = int(request.GET.get('month', current_month))
+        selected_year = int(request.GET.get('year', current_year))
     
     # Get sorting parameters
     sort_by = request.GET.get('sort', 'name')
@@ -437,32 +442,54 @@ def account_entries(request):
             accounts = accounts.order_by(sort_by)
     
     if request.method == 'POST':
-        # Handle form submission for multiple accounts
-        success_count = 0
-        for account in accounts:
-            balance_key = f'balance_{account.id}'
-            notes_key = f'notes_{account.id}'
-            
-            if balance_key in request.POST:
-                balance = request.POST.get(balance_key)
-                notes = request.POST.get(notes_key, '')
-                
-                if balance:  # Only save if balance is provided
-                    entry, created = AccountEntry.objects.get_or_create(
-                        account=account,
-                        month=selected_month,
-                        year=selected_year,
-                        defaults={'balance': balance, 'notes': notes}
-                    )
-                    if not created:
-                        entry.balance = balance
-                        entry.notes = notes
-                        entry.save()
-                    success_count += 1
+        action = request.POST.get('action')
         
-        if success_count > 0:
-            messages.success(request, f'Successfully updated {success_count} account entries for {selected_month}/{selected_year}')
-        return redirect('dashboard:account_entries')
+        if action == 'clear_data':
+            # Handle clear data action
+            cleared_count = 0
+            for account in accounts:
+                entry, created = AccountEntry.objects.get_or_create(
+                    account=account,
+                    month=selected_month,
+                    year=selected_year,
+                    defaults={'balance': 0.00, 'notes': ''}
+                )
+                entry.balance = 0.00
+                entry.notes = ''
+                entry.save()
+                cleared_count += 1
+            
+            if cleared_count > 0:
+                messages.success(request, f'Successfully cleared {cleared_count} account entries for {selected_month}/{selected_year}')
+            return redirect(f'{reverse("dashboard:account_entries")}?month={selected_month}&year={selected_year}&sort={sort_by}&order={order}')
+        
+        else:
+            # Handle form submission for multiple accounts
+            success_count = 0
+            for account in accounts:
+                balance_key = f'balance_{account.id}'
+                notes_key = f'notes_{account.id}'
+                
+                if balance_key in request.POST:
+                    balance = request.POST.get(balance_key)
+                    notes = request.POST.get(notes_key, '')
+                    
+                    if balance:  # Only save if balance is provided
+                        entry, created = AccountEntry.objects.get_or_create(
+                            account=account,
+                            month=selected_month,
+                            year=selected_year,
+                            defaults={'balance': balance, 'notes': notes}
+                        )
+                        if not created:
+                            entry.balance = balance
+                            entry.notes = notes
+                            entry.save()
+                        success_count += 1
+            
+            if success_count > 0:
+                messages.success(request, f'Successfully updated {success_count} account entries for {selected_month}/{selected_year}')
+            return redirect(f'{reverse("dashboard:account_entries")}?month={selected_month}&year={selected_year}&sort={sort_by}&order={order}')
     
     # Get existing entries for the selected month/year
     entries = {}

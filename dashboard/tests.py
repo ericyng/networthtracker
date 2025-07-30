@@ -646,6 +646,34 @@ class AccountEntriesViewsTest(TestCase):
         self.assertEqual(entry.balance, Decimal('5000.00'))
         self.assertEqual(entry.notes, 'Monthly balance update')
 
+    def test_clear_data_action(self):
+        """Test clear data action for account entries"""
+        # Create some entries first
+        AccountEntry.objects.create(
+            account=self.account,
+            month=6,
+            year=2025,
+            balance=Decimal('5000.00'),
+            notes='Test notes'
+        )
+        
+        self.client.login(username='testuser', password='testpass123')
+        response = self.client.post(reverse('dashboard:account_entries'), {
+            'action': 'clear_data',
+            'sort': 'name',
+            'order': 'asc',
+            'month': 6,
+            'year': 2025
+        })
+        
+        self.assertEqual(response.status_code, 302)  # Redirect after success
+        
+        # Check if entries were cleared
+        entry = AccountEntry.objects.filter(account=self.account, month=6, year=2025).first()
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.balance, Decimal('0.00'))
+        self.assertEqual(entry.notes, '')
+
 
 class SettingsViewsTest(TestCase):
     def setUp(self):
