@@ -131,17 +131,36 @@ def dashboard(request):
             year=year
         ).select_related('account')
         
-        # Calculate assets, debts, and net worth for this month
-        monthly_assets = 0
-        monthly_debts = 0
+        # Calculate category breakdown for this month
+        monthly_categories = {
+            'cash': 0,
+            'equity_investments': 0,
+            'retirement': 0,
+            'property': 0,
+            'debts': 0,
+            'other': 0
+        }
         
         for entry in monthly_entries:
-            if entry.account.classification == 'debts' or entry.account.account_type == 'loan':
-                monthly_debts += entry.balance
+            account = entry.account
+            balance = entry.balance
+            
+            # Determine category based on account type and classification
+            if account.account_type in ['checking', 'savings']:
+                monthly_categories['cash'] += balance
+            elif account.account_type == 'investment' and account.classification not in ['pretax', 'posttax', 'roth', 'traditional', '401k', 'hsa', '529', 'fsa']:
+                monthly_categories['equity_investments'] += balance
+            elif account.classification in ['pretax', 'posttax', 'roth', 'traditional', '401k', 'hsa', '529', 'fsa']:
+                monthly_categories['retirement'] += balance
+            elif account.asset_type == 'property':
+                monthly_categories['property'] += balance
+            elif account.classification == 'debts' or account.account_type in ['loan', 'credit']:
+                monthly_categories['debts'] += balance
             else:
-                monthly_assets += entry.balance
+                monthly_categories['other'] += balance
         
-        monthly_net_worth = monthly_assets + monthly_debts  # debts are negative
+        # Calculate net worth (all categories combined)
+        monthly_net_worth = sum(monthly_categories.values())
         
         # Create proper month label
         month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
@@ -158,8 +177,12 @@ def dashboard(request):
         line_chart_data.append({
             'month': month_label,
             'net_worth': float(monthly_net_worth),
-            'assets': float(monthly_assets),
-            'debts': float(abs(monthly_debts)),  # Show as positive for display
+            'cash': float(monthly_categories['cash']),
+            'equity_investments': float(monthly_categories['equity_investments']),
+            'retirement': float(monthly_categories['retirement']),
+            'property': float(monthly_categories['property']),
+            'debts': float(monthly_categories['debts']),  # Keep as negative for proper calculation
+            'other': float(monthly_categories['other']),
             'month_num': month,
             'year': year
         })
