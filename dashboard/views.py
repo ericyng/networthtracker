@@ -170,6 +170,7 @@ def dashboard(request):
         chart_data.append({
             'month': month_label,
             'balance': float(monthly_balance),
+            'net_worth': float(monthly_net_worth),
             'cash': float(monthly_categories['cash']),
             'equity_investments': float(monthly_categories['equity_investments']),
             'retirement': float(monthly_categories['retirement']),
