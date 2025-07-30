@@ -95,13 +95,23 @@ def dashboard(request):
     """Main dashboard view showing overview of accounts"""
     user = request.user
     
+    # Get time period from request, default to 12 months (1 year)
+    period = request.GET.get('period', '12')
+    try:
+        months_to_show = int(period)
+        # Validate the period
+        if months_to_show not in [3, 6, 12, 24, 36, 48, 60]:
+            months_to_show = 12
+    except ValueError:
+        months_to_show = 12
+    
     # Get user's accounts
     accounts = Account.objects.filter(user=user, is_active=True)
     
     # Calculate total balance across all accounts using latest entries
     total_balance = sum(account.get_latest_balance() for account in accounts)
     
-    # Get time series data for the bar chart (last 12 months)
+    # Get time series data for the bar chart
     from django.db.models import Sum
     from datetime import datetime, timedelta
     
@@ -110,8 +120,8 @@ def dashboard(request):
     chart_data = []
     line_chart_data = []
     
-    # Generate data for the last 12 months
-    for i in range(11, -1, -1):  # 11 to 0 (last 12 months)
+    # Generate data for the specified number of months
+    for i in range(months_to_show - 1, -1, -1):  # Start from months_to_show-1 down to 0
         # Calculate the target month properly
         target_month = current_date.month - i
         target_year = current_date.year
@@ -233,6 +243,17 @@ def dashboard(request):
     # Filter out categories with zero values
     pie_chart_data = {k: v for k, v in current_categories.items() if v != 0}
     
+    # Get period display name
+    period_names = {
+        3: '3 Months',
+        6: '6 Months', 
+        12: '1 Year',
+        24: '2 Years',
+        36: '3 Years',
+        48: '4 Years',
+        60: '5 Years'
+    }
+    
     context = {
         'accounts': accounts,
         'total_balance': total_balance,
@@ -240,6 +261,17 @@ def dashboard(request):
         'chart_data': chart_data,
         'line_chart_data': line_chart_data,
         'pie_chart_data': pie_chart_data,
+        'current_period': months_to_show,
+        'period_name': period_names.get(months_to_show, '1 Year'),
+        'available_periods': [
+            {'value': 3, 'name': '3 Months'},
+            {'value': 6, 'name': '6 Months'},
+            {'value': 12, 'name': '1 Year'},
+            {'value': 24, 'name': '2 Years'},
+            {'value': 36, 'name': '3 Years'},
+            {'value': 48, 'name': '4 Years'},
+            {'value': 60, 'name': '5 Years'},
+        ]
     }
     
     return render(request, 'dashboard/dashboard.html', context)
