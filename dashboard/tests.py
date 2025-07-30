@@ -733,6 +733,48 @@ class DataManagementViewsTest(TestCase):
         
         # Check if entries were deleted
         self.assertFalse(AccountEntry.objects.filter(account__user=self.user).exists())
+        
+    def test_import_entries_with_month_names(self):
+        """Test importing entries with month names and formatted balances"""
+        self.client.login(username='testuser', password='testpass123')
+        
+        # Create test CSV content with month names and formatted balances
+        csv_content = """account_name,month,year,balance,notes
+Test Account,January,2025,"61,188.30",Test note 1
+Test Account,February,2025,"61,881.49",Test note 2
+Test Account,March,2025,"62,381.49",Test note 3"""
+        
+        # Create a mock file
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        csv_file = SimpleUploadedFile(
+            "test_entries.csv",
+            csv_content.encode('utf-8'),
+            content_type='text/csv'
+        )
+        
+        response = self.client.post(reverse('dashboard:data_management'), {
+            'action': 'import_entries',
+            'csv_file': csv_file
+        })
+        
+        self.assertEqual(response.status_code, 200)
+        
+        # Check if entries were created with correct month numbers
+        entries = AccountEntry.objects.filter(account=self.account)
+        self.assertEqual(entries.count(), 3)
+        
+        # Check specific entries
+        jan_entry = entries.filter(month=1, year=2025).first()
+        self.assertIsNotNone(jan_entry)
+        self.assertEqual(jan_entry.balance, Decimal('61188.30'))
+        
+        feb_entry = entries.filter(month=2, year=2025).first()
+        self.assertIsNotNone(feb_entry)
+        self.assertEqual(feb_entry.balance, Decimal('61881.49'))
+        
+        mar_entry = entries.filter(month=3, year=2025).first()
+        self.assertIsNotNone(mar_entry)
+        self.assertEqual(mar_entry.balance, Decimal('62381.49'))
 
 
 class ExportViewsTest(TestCase):

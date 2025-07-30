@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 import csv
 import io
+import re
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 from reportlab.lib.pagesizes import letter, A4
@@ -20,6 +21,65 @@ from reportlab.lib.units import inch
 from reportlab.lib import colors
 from .models import Account, Transaction, AccountEntry
 from .forms import AccountForm, TransactionForm, AccountEntryForm
+
+
+def parse_month(month_value):
+    """Convert month value to integer (1-12)"""
+    if isinstance(month_value, int):
+        return month_value
+    
+    month_str = str(month_value).strip().lower()
+    
+    # Handle numeric strings
+    if month_str.isdigit():
+        month_num = int(month_str)
+        if 1 <= month_num <= 12:
+            return month_num
+    
+    # Handle month names
+    month_names = {
+        'january': 1, 'jan': 1,
+        'february': 2, 'feb': 2,
+        'march': 3, 'mar': 3,
+        'april': 4, 'apr': 4,
+        'may': 5,
+        'june': 6, 'jun': 6,
+        'july': 7, 'jul': 7,
+        'august': 8, 'aug': 8,
+        'september': 9, 'sep': 9, 'sept': 9,
+        'october': 10, 'oct': 10,
+        'november': 11, 'nov': 11,
+        'december': 12, 'dec': 12
+    }
+    
+    return month_names.get(month_str, 1)  # Default to January if not found
+
+
+def parse_balance(balance_value):
+    """Convert balance value to float, handling commas and currency symbols"""
+    if isinstance(balance_value, (int, float)):
+        return float(balance_value)
+    
+    balance_str = str(balance_value).strip()
+    
+    # Remove currency symbols and commas
+    balance_str = re.sub(r'[$,€£¥₹]', '', balance_str)
+    balance_str = re.sub(r',', '', balance_str)
+    
+    try:
+        return float(balance_str)
+    except ValueError:
+        return 0.0
+
+
+def get_month_name(month_number):
+    """Convert month number to month name"""
+    month_names = {
+        1: 'January', 2: 'February', 3: 'March', 4: 'April',
+        5: 'May', 6: 'June', 7: 'July', 8: 'August',
+        9: 'September', 10: 'October', 11: 'November', 12: 'December'
+    }
+    return month_names.get(month_number, 'January')
 
 
 @login_required
@@ -600,9 +660,9 @@ def data_management(request):
                                     # Create entry from CSV row
                                     entry = AccountEntry(
                                         account=account,
-                                        month=int(row.get('month', 1)),
+                                        month=parse_month(row.get('month', 1)),
                                         year=int(row.get('year', 2024)),
-                                        balance=float(row.get('balance', 0)),
+                                        balance=parse_balance(row.get('balance', 0)),
                                         notes=row.get('notes', '').strip(),
                                     )
                                     entry.save()
@@ -680,7 +740,11 @@ def export_csv(request, data_type):
                 row[field] = str(value) if value else ''
             else:
                 value = getattr(item, field)
-                row[field] = str(value) if value else ''
+                # Special handling for month field in entries export
+                if data_type == 'entries' and field == 'month':
+                    row[field] = get_month_name(value)
+                else:
+                    row[field] = str(value) if value else ''
         writer.writerow(row)
     
     return response
