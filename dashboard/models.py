@@ -19,6 +19,7 @@ class Account(models.Model):
         ('roth', 'Roth'),
         ('traditional', 'Traditional IRA'),
         ('401k', '401(k)'),
+        ('529', '529 Plan'),
         ('hsa', 'HSA'),
         ('fsa', 'FSA'),
         ('taxable', 'Taxable'),

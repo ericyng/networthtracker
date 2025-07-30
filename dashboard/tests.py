@@ -113,6 +113,29 @@ class AccountModelTest(TestCase):
         # Should return balance for month 1
         balance = account.get_latest_balance(month=1, year=2024)
         self.assertEqual(balance, Decimal('1000.00'))
+        
+    def test_529_classification(self):
+        """Test creating an account with 529 classification"""
+        account = Account.objects.create(
+            user=self.user,
+            name='College Savings 529',
+            account_type='investment',
+            classification='529',
+            asset_type='cash',
+            currency='USD',
+            institution='Vanguard',
+            account_number='529123456'
+        )
+        
+        self.assertEqual(account.name, 'College Savings 529')
+        self.assertEqual(account.account_type, 'investment')
+        self.assertEqual(account.classification, '529')
+        self.assertEqual(account.asset_type, 'cash')
+        self.assertEqual(account.currency, 'USD')
+        self.assertEqual(account.institution, 'Vanguard')
+        self.assertEqual(account.account_number, '529123456')
+        self.assertTrue(account.is_active)
+        self.assertEqual(account.user, self.user)
 
 
 class TransactionModelTest(TestCase):
