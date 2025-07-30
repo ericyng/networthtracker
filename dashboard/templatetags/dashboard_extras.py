@@ -24,4 +24,23 @@ def get_notes(entry):
     """Get notes from an account entry"""
     if entry and hasattr(entry, 'notes'):
         return entry.notes
-    return '' 
+    return ''
+
+@register.filter
+def month_name(month_number):
+    """Convert month number to month name"""
+    month_names = {
+        1: 'January',
+        2: 'February', 
+        3: 'March',
+        4: 'April',
+        5: 'May',
+        6: 'June',
+        7: 'July',
+        8: 'August',
+        9: 'September',
+        10: 'October',
+        11: 'November',
+        12: 'December'
+    }
+    return month_names.get(int(month_number), str(month_number)) 

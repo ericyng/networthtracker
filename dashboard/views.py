@@ -40,6 +40,7 @@ def dashboard(request):
     # Get the current month and year
     current_date = timezone.now()
     chart_data = []
+    line_chart_data = []
     
     # Generate data for the last 12 months
     for i in range(11, -1, -1):  # 11 to 0 (last 12 months)
@@ -47,16 +48,44 @@ def dashboard(request):
         month = target_date.month
         year = target_date.year
         
-        # Get total balance for this month/year
+        # Get total balance for this month/year (for bar chart)
         monthly_balance = AccountEntry.objects.filter(
             account__user=user,
             month=month,
             year=year
         ).aggregate(total=Sum('balance'))['total'] or 0
         
+        # Get detailed breakdown for line chart
+        monthly_entries = AccountEntry.objects.filter(
+            account__user=user,
+            month=month,
+            year=year
+        ).select_related('account')
+        
+        # Calculate assets, debts, and net worth for this month
+        monthly_assets = 0
+        monthly_debts = 0
+        
+        for entry in monthly_entries:
+            if entry.account.classification == 'debts' or entry.account.account_type == 'loan':
+                monthly_debts += entry.balance
+            else:
+                monthly_assets += entry.balance
+        
+        monthly_net_worth = monthly_assets + monthly_debts  # debts are negative
+        
         chart_data.append({
             'month': target_date.strftime('%b %Y'),
             'balance': float(monthly_balance),
+            'month_num': month,
+            'year': year
+        })
+        
+        line_chart_data.append({
+            'month': target_date.strftime('%b %Y'),
+            'net_worth': float(monthly_net_worth),
+            'assets': float(monthly_assets),
+            'debts': float(abs(monthly_debts)),  # Show as positive for display
             'month_num': month,
             'year': year
         })
@@ -66,6 +95,7 @@ def dashboard(request):
         'total_balance': total_balance,
         'has_accounts': accounts.exists(),
         'chart_data': chart_data,
+        'line_chart_data': line_chart_data,
     }
     
     return render(request, 'dashboard/dashboard.html', context)
@@ -377,6 +407,7 @@ def account_entries(request):
     # Get existing entries for the selected month/year
     entries = {}
     for account in accounts:
+        # Get the actual entry for the selected month/year
         entry = AccountEntry.objects.filter(
             account=account,
             month=selected_month,
@@ -384,41 +415,37 @@ def account_entries(request):
         ).first()
         
         if not entry:
-            # Try to get the previous month's entry as default
-            prev_entry = AccountEntry.objects.filter(
-                account=account
-            ).order_by('-year', '-month').first()
-            
-            if prev_entry:
-                entry = AccountEntry(
-                    account=account,
-                    month=selected_month,
-                    year=selected_year,
-                    balance=prev_entry.balance,
-                    notes=''
-                )
-            else:
-                entry = AccountEntry(
-                    account=account,
-                    month=selected_month,
-                    year=selected_year,
-                    balance=0.00,
-                    notes=''
-                )
+            # If no entry exists for this month, create a placeholder with 0 balance
+            entry = AccountEntry(
+                account=account,
+                month=selected_month,
+                year=selected_year,
+                balance=0.00,
+                notes=''
+            )
         
         entries[account.id] = entry
     
     # Group accounts by classification
     accounts_by_classification = {}
+    classification_totals = {}
+    
     for account in accounts:
         classification = account.get_classification_display()
         if classification not in accounts_by_classification:
             accounts_by_classification[classification] = []
+            classification_totals[classification] = 0
         accounts_by_classification[classification].append(account)
+        
+        # Calculate total for this classification using the entry for this month
+        entry = entries.get(account.id)
+        if entry and entry.balance:
+            classification_totals[classification] += entry.balance
     
     context = {
         'accounts': accounts,
         'accounts_by_classification': accounts_by_classification,
+        'classification_totals': classification_totals,
         'entries': entries,
         'selected_month': selected_month,
         'selected_year': selected_year,
