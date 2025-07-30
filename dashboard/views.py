@@ -170,6 +170,12 @@ def dashboard(request):
         chart_data.append({
             'month': month_label,
             'balance': float(monthly_balance),
+            'cash': float(monthly_categories['cash']),
+            'equity_investments': float(monthly_categories['equity_investments']),
+            'retirement': float(monthly_categories['retirement']),
+            'property': float(monthly_categories['property']),
+            'debts': float(monthly_categories['debts']),
+            'other': float(monthly_categories['other']),
             'month_num': month,
             'year': year
         })
@@ -187,12 +193,41 @@ def dashboard(request):
             'year': year
         })
     
+    # Calculate current category totals for pie chart
+    current_categories = {
+        'Cash': 0,
+        'Equity & Investments': 0,
+        'Retirement': 0,
+        'Property': 0,
+        'Debts': 0,
+        'Other': 0
+    }
+    
+    for account in accounts:
+        balance = account.get_latest_balance()
+        if account.account_type in ['checking', 'savings']:
+            current_categories['Cash'] += balance
+        elif account.account_type == 'investment' and account.classification not in ['pretax', 'posttax', 'roth', 'traditional', '401k', 'hsa', '529', 'fsa']:
+            current_categories['Equity & Investments'] += balance
+        elif account.classification in ['pretax', 'posttax', 'roth', 'traditional', '401k', 'hsa', '529', 'fsa']:
+            current_categories['Retirement'] += balance
+        elif account.asset_type == 'property':
+            current_categories['Property'] += balance
+        elif account.classification == 'debts' or account.account_type in ['loan', 'credit']:
+            current_categories['Debts'] += balance
+        else:
+            current_categories['Other'] += balance
+    
+    # Filter out categories with zero values
+    pie_chart_data = {k: v for k, v in current_categories.items() if v != 0}
+    
     context = {
         'accounts': accounts,
         'total_balance': total_balance,
         'has_accounts': accounts.exists(),
         'chart_data': chart_data,
         'line_chart_data': line_chart_data,
+        'pie_chart_data': pie_chart_data,
     }
     
     return render(request, 'dashboard/dashboard.html', context)
