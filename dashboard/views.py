@@ -886,4 +886,10 @@ def export_pdf(request, data_type):
     return response
 
 
+@login_required
+def support(request):
+    """View for support and donation page"""
+    return render(request, 'dashboard/support.html')
+
+
 

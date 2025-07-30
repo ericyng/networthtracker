@@ -31,4 +31,7 @@ urlpatterns = [
     path('export/csv/<str:data_type>/', views.export_csv, name='export_csv'),
     path('export/excel/<str:data_type>/', views.export_excel, name='export_excel'),
     path('export/pdf/<str:data_type>/', views.export_pdf, name='export_pdf'),
+    
+    # Support URL
+    path('support/', views.support, name='support'),
 ] 

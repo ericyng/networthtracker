@@ -1,0 +1,124 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+
+{% block title %}Support - NetWorth Tracker{% endblock %}
+{% block page_title %}Support the Project{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-cup-hot me-2"></i>Buy Me a Coffee
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <p class="lead">
+                        If you find NetWorth Tracker helpful, consider supporting the development!
+                    </p>
+                    <p class="text-muted">
+                        Your support helps keep this project free and enables new features.
+                    </p>
+                </div>
+
+                <div class="row">
+                    <!-- Venmo -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="bi bi-credit-card display-4 text-primary"></i>
+                                </div>
+                                <h5 class="card-title">Venmo</h5>
+                                <p class="card-text text-muted">
+                                    Send money directly to @gen3ric
+                                </p>
+                                <a href="https://venmo.com/gen3ric" target="_blank" class="btn btn-primary">
+                                    <i class="bi bi-credit-card me-2"></i>Send via Venmo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PayPal -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 border-success">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="bi bi-paypal display-4 text-success"></i>
+                                </div>
+                                <h5 class="card-title">PayPal</h5>
+                                <p class="card-text text-muted">
+                                    Send money via PayPal
+                                </p>
+                                <a href="https://paypal.me/gen3ric" target="_blank" class="btn btn-success">
+                                    <i class="bi bi-paypal me-2"></i>Send via PayPal
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cash App -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 border-info">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="bi bi-cash-coin display-4 text-info"></i>
+                                </div>
+                                <h5 class="card-title">Cash App</h5>
+                                <p class="card-text text-muted">
+                                    Send money via Cash App
+                                </p>
+                                <a href="https://cash.app/$howgen3ric" target="_blank" class="btn btn-info">
+                                    <i class="bi bi-cash-coin me-2"></i>Send via Cash App
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="alert alert-info" role="alert">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-info-circle me-2"></i>About NetWorth Tracker
+                            </h6>
+                            <p class="mb-2">
+                                NetWorth Tracker is a comprehensive personal finance application built with Django that helps you monitor your net worth, track account balances, and manage your financial portfolio.
+                            </p>
+                            <hr>
+                            <p class="mb-0">
+                                <strong>Built with:</strong> Django, Bootstrap 5, Chart.js, and lots of ❤️
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="text-center">
+                            <h6 class="text-muted mb-3">Other Ways to Support</h6>
+                            <div class="btn-group" role="group">
+                                <a href="https://github.com/ericyng/pf" target="_blank" class="btn btn-outline-secondary">
+                                    <i class="bi bi-github me-2"></i>Star on GitHub
+                                </a>
+                                <a href="https://github.com/ericyng/pf/issues" target="_blank" class="btn btn-outline-secondary">
+                                    <i class="bi bi-bug me-2"></i>Report Issues
+                                </a>
+                                <a href="https://cursor.sh" target="_blank" class="btn btn-outline-secondary">
+                                    <i class="bi bi-code-slash me-2"></i>Try Cursor AI
+                                </a>
+                                <a href="https://reddit.com/r/personalfinance" target="_blank" class="btn btn-outline-secondary">
+                                    <i class="bi bi-reddit me-2"></i>r/personalfinance
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

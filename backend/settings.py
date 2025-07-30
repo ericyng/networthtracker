@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.apple',
     # Local apps
     'users',
     'dashboard',
@@ -179,5 +180,12 @@ SOCIALACCOUNT_PROVIDERS = {
         'LOCALE_FUNC': 'path.to.callable',
         'VERIFIED_EMAIL': False,
         'VERSION': 'v13.0',
+    },
+    'apple': {
+        'APP': {
+            'client_id': 'your.apple.client.id',
+            'secret': 'your.apple.secret',
+            'key': 'your.apple.key',
+        }
     }
 }
