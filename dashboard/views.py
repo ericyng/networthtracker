@@ -154,6 +154,8 @@ def dashboard(request):
                 monthly_categories['retirement'] += balance
             elif account.asset_type == 'property':
                 monthly_categories['property'] += balance
+            elif account.asset_type == 'crypto':
+                monthly_categories['equity_investments'] += balance
             elif account.classification == 'debts' or account.account_type in ['loan', 'credit']:
                 monthly_categories['debts'] += balance
             else:
@@ -214,6 +216,8 @@ def dashboard(request):
             current_categories['Retirement'] += balance
         elif account.asset_type == 'property':
             current_categories['Property'] += balance
+        elif account.asset_type == 'crypto':
+            current_categories['Equity & Investments'] += balance
         elif account.classification == 'debts' or account.account_type in ['loan', 'credit']:
             current_categories['Debts'] += balance
         else:
@@ -301,6 +305,8 @@ def accounts_list(request):
             category = 'Retirement'
         elif account.asset_type == 'property':
             category = 'Property'
+        elif account.asset_type == 'crypto':
+            category = 'Equity & Investments'
         elif account.classification == 'debts' or account.account_type in ['loan', 'credit']:
             category = 'Debts'
         else:

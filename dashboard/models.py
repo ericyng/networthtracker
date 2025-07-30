@@ -29,6 +29,7 @@ class Account(models.Model):
     
     ASSET_TYPES = [
         ('cash', 'Cash & Cash Equivalents'),
+        ('crypto', 'Cryptocurrency'),
         ('property', 'Real Estate'),
         ('vehicles', 'Vehicles'),
         ('jewelry', 'Jewelry & Watches'),
