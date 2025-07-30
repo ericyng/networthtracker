@@ -60,32 +60,12 @@
             </div>
             <div class="card-body">
                 {% if accounts %}
-                    {% for category, accounts_in_group in accounts_by_category.items %}
+                    {% for classification, accounts_in_group in accounts_by_classification.items %}
                         <div class="mb-4">
-                            <h6 class="border-bottom pb-2 mb-3 
-                                {% if category == 'Cash' %}text-primary{% endif %}
-                                {% if category == 'Equity & Investments' %}text-success{% endif %}
-                                {% if category == 'Retirement' %}text-info{% endif %}
-                                {% if category == 'Property' %}text-warning{% endif %}
-                                {% if category == 'Debts' %}text-danger{% endif %}
-                                {% if category == 'Other' %}text-secondary{% endif %}">
-                                <i class="bi 
-                                    {% if category == 'Cash' %}bi-cash-coin{% endif %}
-                                    {% if category == 'Equity & Investments' %}bi-graph-up{% endif %}
-                                    {% if category == 'Retirement' %}bi-piggy-bank{% endif %}
-                                    {% if category == 'Property' %}bi-house{% endif %}
-                                    {% if category == 'Debts' %}bi-credit-card{% endif %}
-                                    {% if category == 'Other' %}bi-collection{% endif %}
-                                    me-2"></i>{{ category }}
-                                <span class="badge 
-                                    {% if category == 'Cash' %}bg-primary{% endif %}
-                                    {% if category == 'Equity & Investments' %}bg-success{% endif %}
-                                    {% if category == 'Retirement' %}bg-info{% endif %}
-                                    {% if category == 'Property' %}bg-warning{% endif %}
-                                    {% if category == 'Debts' %}bg-danger{% endif %}
-                                    {% if category == 'Other' %}bg-secondary{% endif %}
-                                    ms-2">
-                                    ${{ category_totals|get_item:category|floatformat:2|intcomma }}
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="bi bi-collection me-2"></i>{{ classification }}
+                                <span class="badge {% if classification == 'Debts' %}bg-danger{% else %}bg-success{% endif %} ms-2">
+                                    ${{ classification_totals|get_item:classification|floatformat:2|intcomma }}
                                 </span>
                             </h6>
                             <div class="table-responsive">

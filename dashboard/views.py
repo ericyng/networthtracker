@@ -24,6 +24,13 @@ from .models import Account, Transaction, AccountEntry
 from .forms import AccountForm, TransactionForm, AccountEntryForm
 
 
+def landing_page(request):
+    """Landing page view for non-authenticated users"""
+    if request.user.is_authenticated:
+        return redirect('dashboard:dashboard')
+    return render(request, 'dashboard/landing.html')
+
+
 def parse_month(month_value):
     """Convert month value to integer (1-12)"""
     if isinstance(month_value, int):

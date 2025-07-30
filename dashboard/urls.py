@@ -4,6 +4,9 @@ from . import views
 app_name = 'dashboard'
 
 urlpatterns = [
+    # Landing page
+    path('landing/', views.landing_page, name='landing'),
+    
     # Main dashboard
     path('', views.dashboard, name='dashboard'),
     
