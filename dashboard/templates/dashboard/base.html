@@ -95,6 +95,25 @@
             opacity: 0.5;
         }
         
+        /* External link popout styles */
+        .external-link {
+            position: relative;
+        }
+        
+        .external-link .popout-icon {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+        
+        .external-link:hover .popout-icon {
+            opacity: 1;
+        }
+        
         /* Chart styles */
         .chart-legend {
             max-height: 300px;
@@ -177,21 +196,24 @@
                     </h6>
                     <ul class="nav flex-column mb-2">
                         <li class="nav-item">
-                            <a class="nav-link" href="https://github.com/ericyng/pf/issues" target="_blank">
+                            <a class="nav-link external-link" href="https://github.com/ericyng/networthtracker/issues" target="_blank">
                                 <i class="bi bi-bug me-2"></i>
                                 Report Issues
+                                <i class="bi bi-box-arrow-up-right popout-icon"></i>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="https://github.com/ericyng/pf" target="_blank">
+                            <a class="nav-link external-link" href="https://github.com/ericyng/networthtracker" target="_blank">
                                 <i class="bi bi-github me-2"></i>
                                 View on GitHub
+                                <i class="bi bi-box-arrow-up-right popout-icon"></i>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="https://cursor.sh" target="_blank">
+                            <a class="nav-link external-link" href="https://cursor.sh" target="_blank">
                                 <i class="bi bi-code-slash me-2"></i>
                                 Built with Cursor AI
+                                <i class="bi bi-box-arrow-up-right popout-icon"></i>
                             </a>
                         </li>
                         <li class="nav-item">
