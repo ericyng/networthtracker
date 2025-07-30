@@ -1,0 +1,282 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+
+{% block title %}Data Management - Personal Finance Tracker{% endblock %}
+{% block page_title %}Data Management{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Data Statistics -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>Data Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-3">
+                            <i class="bi bi-bank display-4 text-primary"></i>
+                            <h4 class="mt-2 mb-1">{{ accounts_count|intcomma }}</h4>
+                            <small class="text-muted">Accounts</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-3">
+                            <i class="bi bi-arrow-left-right display-4 text-success"></i>
+                            <h4 class="mt-2 mb-1">{{ transactions_count|intcomma }}</h4>
+                            <small class="text-muted">Transactions</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-3">
+                            <i class="bi bi-calendar-check display-4 text-warning"></i>
+                            <h4 class="mt-2 mb-1">{{ entries_count|intcomma }}</h4>
+                            <small class="text-muted">Entries</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-3">
+                            <i class="bi bi-database display-4 text-info"></i>
+                            <h4 class="mt-2 mb-1">{{ accounts_count|add:transactions_count|add:entries_count|intcomma }}</h4>
+                            <small class="text-muted">Total Records</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Safety Information -->
+        <div class="card mt-3">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Important Notice
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning" role="alert">
+                    <h6 class="alert-heading">⚠️ Data Deletion Warning</h6>
+                    <p class="mb-0">
+                        <strong>All data deletion actions are permanent and cannot be undone.</strong> 
+                        Please make sure you have backed up any important information before proceeding.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Management Actions -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-database-gear me-2"></i>Data Management Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                
+                <!-- Delete Account Entries -->
+                <div class="border rounded p-4 mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-2">
+                                <i class="bi bi-calendar-check text-warning me-2"></i>
+                                Delete Account Entries
+                            </h6>
+                            <p class="text-muted mb-2">
+                                Remove all monthly account balance entries. This will delete {{ entries_count|intcomma }} entries.
+                            </p>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                This will remove historical balance data but keep your accounts and transactions.
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if entries_count > 0 %}
+                                <button type="button" 
+                                        class="btn btn-outline-warning" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteEntriesModal">
+                                    <i class="bi bi-trash me-1"></i>Delete Entries
+                                </button>
+                            {% else %}
+                                <button class="btn btn-outline-secondary" disabled>
+                                    <i class="bi bi-trash me-1"></i>No Entries
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Transactions -->
+                <div class="border rounded p-4 mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-2">
+                                <i class="bi bi-arrow-left-right text-success me-2"></i>
+                                Delete Transactions
+                            </h6>
+                            <p class="text-muted mb-2">
+                                Remove all transaction records. This will delete {{ transactions_count|intcomma }} transactions.
+                            </p>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                This will remove all transaction history but keep your accounts and entries.
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if transactions_count > 0 %}
+                                <button type="button" 
+                                        class="btn btn-outline-success" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteTransactionsModal">
+                                    <i class="bi bi-trash me-1"></i>Delete Transactions
+                                </button>
+                            {% else %}
+                                <button class="btn btn-outline-secondary" disabled>
+                                    <i class="bi bi-trash me-1"></i>No Transactions
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete All Data -->
+                <div class="border rounded p-4 mb-4 border-danger">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-2 text-danger">
+                                <i class="bi bi-bank text-danger me-2"></i>
+                                Delete All Data
+                            </h6>
+                            <p class="text-muted mb-2">
+                                Remove all accounts, transactions, and entries. This will delete {{ accounts_count|intcomma }} accounts and all related data.
+                            </p>
+                            <small class="text-danger">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <strong>This action will completely reset your finance tracker.</strong>
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if accounts_count > 0 %}
+                                <button type="button" 
+                                        class="btn btn-outline-danger" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteAllDataModal">
+                                    <i class="bi bi-trash me-1"></i>Delete All Data
+                                </button>
+                            {% else %}
+                                <button class="btn btn-outline-secondary" disabled>
+                                    <i class="bi bi-trash me-1"></i>No Data
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Entries Modal -->
+<div class="modal fade" id="deleteEntriesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                    Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete all <strong>{{ entries_count|intcomma }} account entries</strong>?</p>
+                <p class="text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_entries">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-trash me-1"></i>Delete Entries
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Transactions Modal -->
+<div class="modal fade" id="deleteTransactionsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                    Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete all <strong>{{ transactions_count|intcomma }} transactions</strong>?</p>
+                <p class="text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_transactions">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-trash me-1"></i>Delete Transactions
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete All Data Modal -->
+<div class="modal fade" id="deleteAllDataModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Final Warning
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" role="alert">
+                    <h6 class="alert-heading">⚠️ This will delete ALL your data!</h6>
+                    <p class="mb-0">
+                        This action will permanently delete:
+                    </p>
+                    <ul class="mb-0 mt-2">
+                        <li><strong>{{ accounts_count|intcomma }} accounts</strong></li>
+                        <li><strong>{{ transactions_count|intcomma }} transactions</strong></li>
+                        <li><strong>{{ entries_count|intcomma }} account entries</strong></li>
+                    </ul>
+                </div>
+                <p class="text-danger">
+                    <strong>This action cannot be undone and will completely reset your finance tracker.</strong>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_accounts">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Delete All Data
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

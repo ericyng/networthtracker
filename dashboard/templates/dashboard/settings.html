@@ -1,0 +1,143 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+
+{% block title %}Account Settings - Personal Finance Tracker{% endblock %}
+{% block page_title %}Account Settings{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Profile Information -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-circle me-2"></i>Profile Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="first_name" 
+                                   name="first_name" 
+                                   value="{{ user.first_name }}" 
+                                   placeholder="Enter your first name">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="last_name" 
+                                   name="last_name" 
+                                   value="{{ user.last_name }}" 
+                                   placeholder="Enter your last name">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" 
+                               class="form-control" 
+                               id="email" 
+                               name="email" 
+                               value="{{ user.email }}" 
+                               placeholder="Enter your email address"
+                               required>
+                        <div class="form-text">This email is used for login and notifications.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="username" 
+                               value="{{ user.username }}" 
+                               readonly>
+                        <div class="form-text">Username cannot be changed.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date_joined" class="form-label">Member Since</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="date_joined" 
+                               value="{{ user.date_joined|date:'F j, Y' }}" 
+                               readonly>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Update Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Statistics -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>Account Statistics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-3">
+                            <i class="bi bi-bank display-4 text-primary"></i>
+                            <h4 class="mt-2 mb-1">{{ accounts_count|intcomma }}</h4>
+                            <small class="text-muted">Accounts</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-3">
+                            <i class="bi bi-arrow-left-right display-4 text-success"></i>
+                            <h4 class="mt-2 mb-1">{{ transactions_count|intcomma }}</h4>
+                            <small class="text-muted">Transactions</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-3">
+                            <i class="bi bi-calendar-check display-4 text-warning"></i>
+                            <h4 class="mt-2 mb-1">{{ entries_count|intcomma }}</h4>
+                            <small class="text-muted">Entries</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-3">
+                            <i class="bi bi-clock display-4 text-info"></i>
+                            <h4 class="mt-2 mb-1">{{ user.last_login|date:'M j'|default:'Never' }}</h4>
+                            <small class="text-muted">Last Login</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'dashboard:data_management' %}" class="btn btn-outline-warning">
+                        <i class="bi bi-database-gear me-2"></i>Data Management
+                    </a>
+                    <a href="{% url 'dashboard:accounts_list' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-bank me-2"></i>View All Accounts
+                    </a>
+                    <a href="{% url 'dashboard:account_entries' %}" class="btn btn-outline-success">
+                        <i class="bi bi-calendar-plus me-2"></i>Add/Edit Entries
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,187 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+{% load dashboard_extras %}
+
+{% block title %}Account Entries - Personal Finance Tracker{% endblock %}
+{% block page_title %}Add/Edit Account Entries{% endblock %}
+
+{% block page_actions %}
+    <div class="d-flex align-items-center">
+        <!-- Month/Year Filter -->
+        <form method="get" class="d-flex me-3">
+            <select name="month" class="form-select form-select-sm me-2" style="width: auto;">
+                <option value="1" {% if selected_month == 1 %}selected{% endif %}>January</option>
+                <option value="2" {% if selected_month == 2 %}selected{% endif %}>February</option>
+                <option value="3" {% if selected_month == 3 %}selected{% endif %}>March</option>
+                <option value="4" {% if selected_month == 4 %}selected{% endif %}>April</option>
+                <option value="5" {% if selected_month == 5 %}selected{% endif %}>May</option>
+                <option value="6" {% if selected_month == 6 %}selected{% endif %}>June</option>
+                <option value="7" {% if selected_month == 7 %}selected{% endif %}>July</option>
+                <option value="8" {% if selected_month == 8 %}selected{% endif %}>August</option>
+                <option value="9" {% if selected_month == 9 %}selected{% endif %}>September</option>
+                <option value="10" {% if selected_month == 10 %}selected{% endif %}>October</option>
+                <option value="11" {% if selected_month == 11 %}selected{% endif %}>November</option>
+                <option value="12" {% if selected_month == 12 %}selected{% endif %}>December</option>
+            </select>
+            <select name="year" class="form-select form-select-sm me-2" style="width: auto;">
+                {% for year in "2020,2021,2022,2023,2024,2025,2026"|split:"," %}
+                    <option value="{{ year }}" {% if selected_year == year|add:0 %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+            </select>
+            <!-- Preserve sort parameters -->
+            <input type="hidden" name="sort" value="{{ sort_by }}">
+            <input type="hidden" name="order" value="{{ order }}">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-funnel me-1"></i>Filter
+            </button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block content %}
+    {% if accounts %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-check me-2"></i>Account Entries for {{ selected_month }}/{{ selected_year }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <!-- Preserve sort parameters in form -->
+                            <input type="hidden" name="sort" value="{{ sort_by }}">
+                            <input type="hidden" name="order" value="{{ order }}">
+                            
+                            {% for classification, accounts_in_group in accounts_by_classification.items %}
+                                <div class="mb-4">
+                                    <h6 class="text-primary border-bottom pb-2 mb-3">
+                                        <i class="bi bi-collection me-2"></i>{{ classification }}
+                                    </h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th class="sortable" data-sort="name">
+                                                        <a href="?month={{ selected_month }}&year={{ selected_year }}&sort=name&order={% if sort_by == 'name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                            Account Name
+                                                            {% if sort_by == 'name' %}
+                                                                <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                            {% else %}
+                                                                <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                            {% endif %}
+                                                        </a>
+                                                    </th>
+                                                    <th class="sortable" data-sort="account_type">
+                                                        <a href="?month={{ selected_month }}&year={{ selected_year }}&sort=account_type&order={% if sort_by == 'account_type' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                            Type
+                                                            {% if sort_by == 'account_type' %}
+                                                                <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                            {% else %}
+                                                                <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                            {% endif %}
+                                                        </a>
+                                                    </th>
+                                                    <th class="sortable" data-sort="asset_type">
+                                                        <a href="?month={{ selected_month }}&year={{ selected_year }}&sort=asset_type&order={% if sort_by == 'asset_type' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                            Asset Type
+                                                            {% if sort_by == 'asset_type' %}
+                                                                <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                            {% else %}
+                                                                <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                            {% endif %}
+                                                        </a>
+                                                    </th>
+                                                    <th class="sortable" data-sort="institution">
+                                                        <a href="?month={{ selected_month }}&year={{ selected_year }}&sort=institution&order={% if sort_by == 'institution' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                            Institution
+                                                            {% if sort_by == 'institution' %}
+                                                                <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                            {% else %}
+                                                                <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                            {% endif %}
+                                                        </a>
+                                                    </th>
+                                                    <th class="sortable" data-sort="balance">
+                                                        <a href="?month={{ selected_month }}&year={{ selected_year }}&sort=balance&order={% if sort_by == 'balance' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                            Balance
+                                                            {% if sort_by == 'balance' %}
+                                                                <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                            {% else %}
+                                                                <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                            {% endif %}
+                                                        </a>
+                                                    </th>
+                                                    <th>Notes</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for account in accounts_in_group %}
+                                                    <tr>
+                                                        <td>
+                                                            <div class="fw-bold">{{ account.name }}</div>
+                                                            {% if account.institution %}
+                                                                <small class="text-muted">{{ account.institution }}</small>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge bg-secondary">{{ account.get_account_type_display }}</span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge bg-warning">{{ account.get_asset_type_display }}</span>
+                                                        </td>
+                                                        <td>
+                                                            {% if account.institution %}
+                                                                {{ account.institution }}
+                                                            {% else %}
+                                                                <span class="text-muted">-</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" 
+                                                                   name="balance_{{ account.id }}" 
+                                                                   value="{{ entries|get_item:account.id|get_balance }}" 
+                                                                   class="form-control" 
+                                                                   step="0.01" 
+                                                                   placeholder="0.00"
+                                                                   required>
+                                                        </td>
+                                                        <td>
+                                                            <textarea name="notes_{{ account.id }}" 
+                                                                      class="form-control" 
+                                                                      rows="2" 
+                                                                      placeholder="Optional notes">{{ entries|get_item:account.id|get_notes }}</textarea>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            
+                            <div class="text-end mt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save me-1"></i>Save All Entries
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">No accounts found!</h4>
+            <p>You need to create some accounts first before you can add entries.</p>
+            <hr>
+            <p class="mb-0">
+                <a href="{% url 'dashboard:account_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Create Your First Account
+                </a>
+            </p>
+        </div>
+    {% endif %}
+{% endblock %} 
