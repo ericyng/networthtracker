@@ -23,13 +23,7 @@
                             <small class="text-muted">Accounts</small>
                         </div>
                     </div>
-                    <div class="col-6 mb-3">
-                        <div class="border rounded p-3">
-                            <i class="bi bi-arrow-left-right display-4 text-success"></i>
-                            <h4 class="mt-2 mb-1">{{ transactions_count|intcomma }}</h4>
-                            <small class="text-muted">Transactions</small>
-                        </div>
-                    </div>
+
                     <div class="col-6 mb-3">
                         <div class="border rounded p-3">
                             <i class="bi bi-calendar-check display-4 text-warning"></i>
@@ -40,7 +34,7 @@
                     <div class="col-6 mb-3">
                         <div class="border rounded p-3">
                             <i class="bi bi-database display-4 text-info"></i>
-                            <h4 class="mt-2 mb-1">{{ accounts_count|add:transactions_count|add:entries_count|intcomma }}</h4>
+                            <h4 class="mt-2 mb-1">{{ accounts_count|add:entries_count|intcomma }}</h4>
                             <small class="text-muted">Total Records</small>
                         </div>
                     </div>
@@ -62,6 +56,192 @@
                         <strong>All data deletion actions are permanent and cannot be undone.</strong> 
                         Please make sure you have backed up any important information before proceeding.
                     </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Export Section -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-download me-2"></i>Export Data
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    Export your financial data in various formats for backup, analysis, or sharing.
+                </p>
+                
+                <!-- Export Accounts -->
+                <div class="border rounded p-4 mb-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="mb-2">
+                                <i class="bi bi-bank text-primary me-2"></i>
+                                Export Accounts
+                            </h6>
+                            <p class="text-muted mb-2">
+                                Export all your accounts with details like type, classification, and institution.
+                            </p>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Includes account names, types, classifications, and creation dates.
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            {% if accounts_count > 0 %}
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'dashboard:export_csv' 'accounts' %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-file-earmark-text me-1"></i>CSV
+                                    </a>
+                                    <a href="{% url 'dashboard:export_excel' 'accounts' %}" class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel
+                                    </a>
+                                    <a href="{% url 'dashboard:export_pdf' 'accounts' %}" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                                    </a>
+                                </div>
+                            {% else %}
+                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                    <i class="bi bi-download me-1"></i>No Data
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Export Account Entries -->
+                <div class="border rounded p-4 mb-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="mb-2">
+                                <i class="bi bi-calendar-check text-warning me-2"></i>
+                                Export Account Entries
+                            </h6>
+                            <p class="text-muted mb-2">
+                                Export all your monthly account balance entries with historical data.
+                            </p>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Includes monthly balances, notes, and historical tracking data.
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            {% if entries_count > 0 %}
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'dashboard:export_csv' 'entries' %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-file-earmark-text me-1"></i>CSV
+                                    </a>
+                                    <a href="{% url 'dashboard:export_excel' 'entries' %}" class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel
+                                    </a>
+                                    <a href="{% url 'dashboard:export_pdf' 'entries' %}" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                                    </a>
+                                </div>
+                            {% else %}
+                                <button class="btn btn-outline-secondary btn-sm" disabled>
+                                    <i class="bi bi-download me-1"></i>No Data
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Import Section -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-upload me-2"></i>Import Data
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    Import your financial data from CSV files. Make sure your CSV files match the expected format.
+                </p>
+                
+                <!-- Import Accounts -->
+                <div class="border rounded p-4 mb-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="mb-2">
+                                <i class="bi bi-bank text-primary me-2"></i>
+                                Import Accounts
+                            </h6>
+                            <p class="text-muted mb-2">
+                                Import accounts from a CSV file with account details.
+                            </p>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Required columns: name, account_type, classification, asset_type, currency, institution, account_number
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <form method="post" enctype="multipart/form-data" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="import_accounts">
+                                <div class="input-group">
+                                    <input type="file" name="csv_file" class="form-control form-control-sm" accept=".csv" required>
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-upload me-1"></i>Import
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Import Account Entries -->
+                <div class="border rounded p-4 mb-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="mb-2">
+                                <i class="bi bi-calendar-check text-warning me-2"></i>
+                                Import Account Entries
+                            </h6>
+                            <p class="text-muted mb-2">
+                                Import monthly account balance entries from a CSV file.
+                            </p>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Required columns: account_name, month, year, balance, notes
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <form method="post" enctype="multipart/form-data" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="import_entries">
+                                <div class="input-group">
+                                    <input type="file" name="csv_file" class="form-control form-control-sm" accept=".csv" required>
+                                    <button type="submit" class="btn btn-warning btn-sm">
+                                        <i class="bi bi-upload me-1"></i>Import
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Import Instructions -->
+                <div class="alert alert-info" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-info-circle me-2"></i>Import Instructions
+                    </h6>
+                    <ul class="mb-0">
+                        <li>CSV files should have headers in the first row</li>
+                        <li>Account names in entries must match existing account names</li>
+                        <li>Dates should be in YYYY-MM-DD format</li>
+                        <li>Numbers should not include currency symbols</li>
+                        <li>Duplicate entries may be created if not careful</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -110,38 +290,7 @@
                     </div>
                 </div>
 
-                <!-- Delete Transactions -->
-                <div class="border rounded p-4 mb-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h6 class="mb-2">
-                                <i class="bi bi-arrow-left-right text-success me-2"></i>
-                                Delete Transactions
-                            </h6>
-                            <p class="text-muted mb-2">
-                                Remove all transaction records. This will delete {{ transactions_count|intcomma }} transactions.
-                            </p>
-                            <small class="text-muted">
-                                <i class="bi bi-info-circle me-1"></i>
-                                This will remove all transaction history but keep your accounts and entries.
-                            </small>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            {% if transactions_count > 0 %}
-                                <button type="button" 
-                                        class="btn btn-outline-success" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#deleteTransactionsModal">
-                                    <i class="bi bi-trash me-1"></i>Delete Transactions
-                                </button>
-                            {% else %}
-                                <button class="btn btn-outline-secondary" disabled>
-                                    <i class="bi bi-trash me-1"></i>No Transactions
-                                </button>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- Delete All Data -->
                 <div class="border rounded p-4 mb-4 border-danger">
@@ -210,34 +359,7 @@
     </div>
 </div>
 
-<!-- Delete Transactions Modal -->
-<div class="modal fade" id="deleteTransactionsModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
-                    Confirm Deletion
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete all <strong>{{ transactions_count|intcomma }} transactions</strong>?</p>
-                <p class="text-muted">This action cannot be undone.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="post" style="display: inline;">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="delete_transactions">
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-trash me-1"></i>Delete Transactions
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <!-- Delete All Data Modal -->
 <div class="modal fade" id="deleteAllDataModal" tabindex="-1">

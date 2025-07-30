@@ -53,7 +53,7 @@
                                     {{ form.classification.errors.0 }}
                                 </div>
                             {% endif %}
-                            <small class="form-text text-muted">Tax treatment classification for the account</small>
+                            <small class="form-text text-muted">Tax treatment classification for the account. Loans are automatically categorized as "Debts".</small>
                         </div>
                         
                         <div class="col-md-6 mb-3">
@@ -119,4 +119,31 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const accountTypeSelect = document.getElementById('{{ form.account_type.id_for_label }}');
+    const classificationSelect = document.getElementById('{{ form.classification.id_for_label }}');
+    
+    function updateClassification() {
+        const selectedAccountType = accountTypeSelect.value;
+        
+        if (selectedAccountType === 'loan') {
+            // Find the "Debts" option and select it
+            for (let i = 0; i < classificationSelect.options.length; i++) {
+                if (classificationSelect.options[i].value === 'debts') {
+                    classificationSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Update classification when account type changes
+    accountTypeSelect.addEventListener('change', updateClassification);
+    
+    // Also update on page load if account type is already set to loan
+    updateClassification();
+});
+</script>
 {% endblock %} 

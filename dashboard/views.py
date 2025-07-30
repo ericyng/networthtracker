@@ -1,13 +1,23 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db.models import Sum, Q
 from django.db import models
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import User
+from django.template.loader import render_to_string
+import csv
+import io
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib import colors
 from .models import Account, Transaction, AccountEntry
 from .forms import AccountForm, TransactionForm, AccountEntryForm
 
@@ -98,18 +108,39 @@ def accounts_list(request):
     # Calculate summary statistics using latest entries
     total_balance = sum(account.get_latest_balance() for account in accounts)
     
-    # Group accounts by classification
+    # Calculate total debts (accounts with 'debts' classification)
+    total_debts = sum(
+        account.get_latest_balance() 
+        for account in accounts 
+        if account.classification == 'debts'
+    )
+    
+    # Calculate total assets (excluding debts and loans)
+    total_assets = sum(
+        account.get_latest_balance() 
+        for account in accounts 
+        if account.classification != 'debts' and account.account_type != 'loan'
+    )
+    
+    # Group accounts by classification and calculate totals
     accounts_by_classification = {}
+    classification_totals = {}
+    
     for account in accounts:
         classification = account.get_classification_display()
         if classification not in accounts_by_classification:
             accounts_by_classification[classification] = []
+            classification_totals[classification] = 0
         accounts_by_classification[classification].append(account)
+        classification_totals[classification] += account.get_latest_balance()
     
     context = {
         'accounts': accounts,
         'accounts_by_classification': accounts_by_classification,
+        'classification_totals': classification_totals,
         'total_balance': total_balance,
+        'total_debts': total_debts,
+        'total_assets': total_assets,
         'sort_by': sort_by,
         'order': order,
     }
@@ -466,15 +497,6 @@ def data_management(request):
             messages.success(request, f'Successfully deleted {accounts_count} accounts and all related data.')
             return redirect('dashboard:dashboard')
             
-        elif action == 'delete_transactions':
-            # Delete all transactions
-            transactions = Transaction.objects.filter(account__user=user)
-            transactions_count = transactions.count()
-            transactions.delete()
-            
-            messages.success(request, f'Successfully deleted {transactions_count} transactions.')
-            return redirect('dashboard:data_management')
-            
         elif action == 'delete_entries':
             # Delete all account entries
             entries = AccountEntry.objects.filter(account__user=user)
@@ -483,6 +505,98 @@ def data_management(request):
             
             messages.success(request, f'Successfully deleted {entries_count} account entries.')
             return redirect('dashboard:data_management')
+            
+        elif action == 'import_accounts':
+            # Handle accounts import
+            if 'csv_file' in request.FILES:
+                csv_file = request.FILES['csv_file']
+                if csv_file.name.endswith('.csv'):
+                    try:
+                        # Decode the file content
+                        decoded_file = csv_file.read().decode('utf-8').splitlines()
+                        reader = csv.DictReader(decoded_file)
+                        
+                        imported_count = 0
+                        errors = []
+                        
+                        for row in reader:
+                            try:
+                                # Create account from CSV row
+                                account = Account(
+                                    user=user,
+                                    name=row.get('name', '').strip(),
+                                    account_type=row.get('account_type', 'checking'),
+                                    classification=row.get('classification', 'taxable'),
+                                    asset_type=row.get('asset_type', 'cash'),
+                                    currency=row.get('currency', 'USD'),
+                                    institution=row.get('institution', '').strip(),
+                                    account_number=row.get('account_number', '').strip(),
+                                )
+                                account.save()
+                                imported_count += 1
+                                
+                            except Exception as e:
+                                errors.append(f"Row {reader.line_num}: {str(e)}")
+                        
+                        if imported_count > 0:
+                            messages.success(request, f'Successfully imported {imported_count} accounts.')
+                        if errors:
+                            messages.warning(request, f'Import completed with {len(errors)} errors. Check the data format.')
+                            
+                    except Exception as e:
+                        messages.error(request, f'Error importing accounts: {str(e)}')
+                else:
+                    messages.error(request, 'Please upload a valid CSV file.')
+            else:
+                messages.error(request, 'Please select a CSV file to import.')
+                
+        elif action == 'import_entries':
+            # Handle account entries import
+            if 'csv_file' in request.FILES:
+                csv_file = request.FILES['csv_file']
+                if csv_file.name.endswith('.csv'):
+                    try:
+                        # Decode the file content
+                        decoded_file = csv_file.read().decode('utf-8').splitlines()
+                        reader = csv.DictReader(decoded_file)
+                        
+                        imported_count = 0
+                        errors = []
+                        
+                        for row in reader:
+                            try:
+                                # Find the account by name
+                                account_name = row.get('account_name', '').strip()
+                                account = Account.objects.filter(user=user, name=account_name).first()
+                                
+                                if account:
+                                    # Create entry from CSV row
+                                    entry = AccountEntry(
+                                        account=account,
+                                        month=int(row.get('month', 1)),
+                                        year=int(row.get('year', 2024)),
+                                        balance=float(row.get('balance', 0)),
+                                        notes=row.get('notes', '').strip(),
+                                    )
+                                    entry.save()
+                                    imported_count += 1
+                                else:
+                                    errors.append(f"Row {reader.line_num}: Account '{account_name}' not found")
+                                    
+                            except Exception as e:
+                                errors.append(f"Row {reader.line_num}: {str(e)}")
+                        
+                        if imported_count > 0:
+                            messages.success(request, f'Successfully imported {imported_count} account entries.')
+                        if errors:
+                            messages.warning(request, f'Import completed with {len(errors)} errors. Check the data format.')
+                            
+                    except Exception as e:
+                        messages.error(request, f'Error importing entries: {str(e)}')
+                else:
+                    messages.error(request, 'Please upload a valid CSV file.')
+            else:
+                messages.error(request, 'Please select a CSV file to import.')
     
     # Get data statistics
     accounts_count = Account.objects.filter(user=user, is_active=True).count()
@@ -496,6 +610,253 @@ def data_management(request):
     }
     
     return render(request, 'dashboard/data_management.html', context)
+
+
+@login_required
+def export_csv(request, data_type):
+    """Export data as CSV"""
+    user = request.user
+    
+    if data_type == 'accounts':
+        data = Account.objects.filter(user=user, is_active=True)
+        filename = f'accounts_{user.username}_{timezone.now().strftime("%Y%m%d")}.csv'
+        fieldnames = ['name', 'account_type', 'classification', 'asset_type', 'currency', 'institution', 'account_number', 'created_at']
+        
+    elif data_type == 'transactions':
+        data = Transaction.objects.filter(account__user=user)
+        filename = f'transactions_{user.username}_{timezone.now().strftime("%Y%m%d")}.csv'
+        fieldnames = ['account__name', 'amount', 'transaction_type', 'category', 'description', 'date', 'created_at']
+        
+    elif data_type == 'entries':
+        data = AccountEntry.objects.filter(account__user=user)
+        filename = f'account_entries_{user.username}_{timezone.now().strftime("%Y%m%d")}.csv'
+        fieldnames = ['account__name', 'month', 'year', 'balance', 'notes', 'created_at']
+    
+    else:
+        return HttpResponse('Invalid data type', status=400)
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    writer = csv.DictWriter(response, fieldnames=fieldnames)
+    writer.writeheader()
+    
+    for item in data:
+        row = {}
+        for field in fieldnames:
+            if '__' in field:
+                # Handle related fields
+                parts = field.split('__')
+                value = item
+                for part in parts:
+                    value = getattr(value, part)
+                row[field] = str(value) if value else ''
+            else:
+                value = getattr(item, field)
+                row[field] = str(value) if value else ''
+        writer.writerow(row)
+    
+    return response
+
+
+@login_required
+def export_excel(request, data_type):
+    """Export data as Excel"""
+    user = request.user
+    
+    if data_type == 'accounts':
+        data = Account.objects.filter(user=user, is_active=True)
+        filename = f'accounts_{user.username}_{timezone.now().strftime("%Y%m%d")}.xlsx'
+        headers = ['Name', 'Account Type', 'Classification', 'Asset Type', 'Currency', 'Institution', 'Account Number', 'Created At']
+        
+    elif data_type == 'transactions':
+        data = Transaction.objects.filter(account__user=user)
+        filename = f'transactions_{user.username}_{timezone.now().strftime("%Y%m%d")}.xlsx'
+        headers = ['Account', 'Amount', 'Type', 'Category', 'Description', 'Date', 'Created At']
+        
+    elif data_type == 'entries':
+        data = AccountEntry.objects.filter(account__user=user)
+        filename = f'account_entries_{user.username}_{timezone.now().strftime("%Y%m%d")}.xlsx'
+        headers = ['Account', 'Month', 'Year', 'Balance', 'Notes', 'Created At']
+    
+    else:
+        return HttpResponse('Invalid data type', status=400)
+    
+    # Create workbook and worksheet
+    wb = Workbook()
+    ws = wb.active
+    ws.title = data_type.title()
+    
+    # Style for headers
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+    
+    # Add headers
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal="center")
+    
+    # Add data
+    for row, item in enumerate(data, 2):
+        if data_type == 'accounts':
+            ws.cell(row=row, column=1, value=item.name)
+            ws.cell(row=row, column=2, value=item.get_account_type_display())
+            ws.cell(row=row, column=3, value=item.get_classification_display())
+            ws.cell(row=row, column=4, value=item.get_asset_type_display())
+            ws.cell(row=row, column=5, value=item.currency)
+            ws.cell(row=row, column=6, value=item.institution or '')
+            ws.cell(row=row, column=7, value=item.account_number or '')
+            ws.cell(row=row, column=8, value=item.created_at.strftime('%Y-%m-%d %H:%M'))
+            
+        elif data_type == 'transactions':
+            ws.cell(row=row, column=1, value=item.account.name)
+            ws.cell(row=row, column=2, value=float(item.amount))
+            ws.cell(row=row, column=3, value=item.get_transaction_type_display())
+            ws.cell(row=row, column=4, value=item.get_category_display())
+            ws.cell(row=row, column=5, value=item.description)
+            ws.cell(row=row, column=6, value=item.date.strftime('%Y-%m-%d'))
+            ws.cell(row=row, column=7, value=item.created_at.strftime('%Y-%m-%d %H:%M'))
+            
+        elif data_type == 'entries':
+            ws.cell(row=row, column=1, value=item.account.name)
+            ws.cell(row=row, column=2, value=item.month)
+            ws.cell(row=row, column=3, value=item.year)
+            ws.cell(row=row, column=4, value=float(item.balance))
+            ws.cell(row=row, column=5, value=item.notes or '')
+            ws.cell(row=row, column=6, value=item.created_at.strftime('%Y-%m-%d %H:%M'))
+    
+    # Auto-adjust column widths
+    for column in ws.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        ws.column_dimensions[column_letter].width = adjusted_width
+    
+    # Save to response
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    wb.save(response)
+    return response
+
+
+@login_required
+def export_pdf(request, data_type):
+    """Export data as PDF"""
+    user = request.user
+    
+    if data_type == 'accounts':
+        data = Account.objects.filter(user=user, is_active=True)
+        filename = f'accounts_{user.username}_{timezone.now().strftime("%Y%m%d")}.pdf'
+        title = 'Accounts Report'
+        headers = ['Name', 'Type', 'Classification', 'Asset Type', 'Institution']
+        
+    elif data_type == 'transactions':
+        data = Transaction.objects.filter(account__user=user)
+        filename = f'transactions_{user.username}_{timezone.now().strftime("%Y%m%d")}.pdf'
+        title = 'Transactions Report'
+        headers = ['Account', 'Amount', 'Type', 'Category', 'Description', 'Date']
+        
+    elif data_type == 'entries':
+        data = AccountEntry.objects.filter(account__user=user)
+        filename = f'account_entries_{user.username}_{timezone.now().strftime("%Y%m%d")}.pdf'
+        title = 'Account Entries Report'
+        headers = ['Account', 'Month/Year', 'Balance', 'Notes']
+    
+    else:
+        return HttpResponse('Invalid data type', status=400)
+    
+    # Create PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    elements = []
+    
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=16,
+        spaceAfter=30,
+        alignment=1  # Center alignment
+    )
+    
+    # Add title
+    elements.append(Paragraph(f"NetWorth Tracker - {title}", title_style))
+    elements.append(Spacer(1, 20))
+    
+    # Prepare table data
+    table_data = [headers]
+    
+    for item in data:
+        if data_type == 'accounts':
+            row = [
+                item.name,
+                item.get_account_type_display(),
+                item.get_classification_display(),
+                item.get_asset_type_display(),
+                item.institution or 'N/A'
+            ]
+        elif data_type == 'transactions':
+            row = [
+                item.account.name,
+                f"${item.amount:,.2f}",
+                item.get_transaction_type_display(),
+                item.get_category_display(),
+                item.description,
+                item.date.strftime('%Y-%m-%d')
+            ]
+        elif data_type == 'entries':
+            row = [
+                item.account.name,
+                f"{item.month}/{item.year}",
+                f"${item.balance:,.2f}",
+                item.notes or 'N/A'
+            ]
+        table_data.append(row)
+    
+    # Create table
+    table = Table(table_data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+    ]))
+    
+    elements.append(table)
+    elements.append(Spacer(1, 20))
+    
+    # Add summary
+    summary_style = ParagraphStyle(
+        'Summary',
+        parent=styles['Normal'],
+        fontSize=10,
+        spaceAfter=10
+    )
+    elements.append(Paragraph(f"Generated on: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}", summary_style))
+    elements.append(Paragraph(f"Total records: {len(data)}", summary_style))
+    
+    doc.build(elements)
+    return response
 
 
 

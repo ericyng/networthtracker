@@ -22,6 +22,7 @@ class Account(models.Model):
         ('hsa', 'HSA'),
         ('fsa', 'FSA'),
         ('taxable', 'Taxable'),
+        ('debts', 'Debts'),
         ('other', 'Other'),
     ]
     

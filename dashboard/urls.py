@@ -26,4 +26,9 @@ urlpatterns = [
     # Settings URLs
     path('settings/', views.settings, name='settings'),
     path('data-management/', views.data_management, name='data_management'),
+    
+    # Export URLs
+    path('export/csv/<str:data_type>/', views.export_csv, name='export_csv'),
+    path('export/excel/<str:data_type>/', views.export_excel, name='export_excel'),
+    path('export/pdf/<str:data_type>/', views.export_pdf, name='export_pdf'),
 ] 
