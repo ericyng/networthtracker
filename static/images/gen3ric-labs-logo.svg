@@ -1,0 +1,33 @@
+<svg width="200" height="80" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Chemical Flask -->
+  <g transform="translate(10, 20)">
+    <!-- Flask outline -->
+    <path d="M 8 0 L 8 35 L 0 35 L 0 40 L 16 40 L 16 35 L 8 35 Z" 
+          fill="none" 
+          stroke="#1e3a8a" 
+          stroke-width="2"/>
+    
+    <!-- Flask liquid -->
+    <path d="M 1 15 L 1 37 L 15 37 L 15 15 Z" 
+          fill="#ea580c"/>
+    
+    <!-- Bubbles -->
+    <circle cx="8" cy="12" r="2" fill="#ea580c"/>
+    <circle cx="6" cy="10" r="1.5" fill="#ea580c"/>
+    <circle cx="10" cy="11" r="1.5" fill="#ea580c"/>
+  </g>
+  
+  <!-- GL Initials -->
+  <g transform="translate(50, 15)">
+    <text x="0" y="25" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1e3a8a">G</text>
+    <text x="20" y="25" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#ea580c">L</text>
+  </g>
+  
+  <!-- GEN3RIC LABS Text -->
+  <g transform="translate(10, 55)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#1e3a8a">
+      GEN<tspan fill="#ea580c">3</tspan>RIC
+    </text>
+    <text x="0" y="15" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#1e3a8a">LABS</text>
+  </g>
+</svg> 

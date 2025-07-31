@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -258,27 +259,7 @@
     <nav class="navbar navbar-expand-lg navbar-light fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#" style="display: flex; align-items: center; gap: 8px;">
-                <div class="gen3ric-logo" style="gap: 8px;">
-                    <div class="gen3ric-logo-icon" style="gap: 6px;">
-                        <div class="flask-icon" style="width: 24px; height: 30px;">
-                            <div class="flask-outline" style="border-width: 2px;">
-                                <div class="flask-liquid"></div>
-                            </div>
-                            <div class="flask-bubbles" style="top: 6px;">
-                                <div class="bubble" style="width: 3px; height: 3px;"></div>
-                                <div class="bubble" style="width: 3px; height: 3px;"></div>
-                                <div class="bubble" style="width: 3px; height: 3px;"></div>
-                            </div>
-                        </div>
-                        <div class="gen3ric-initials" style="font-size: 18px;">
-                            <span class="gen3ric-g">G</span><span class="gen3ric-l">L</span>
-                        </div>
-                    </div>
-                    <div class="gen3ric-text" style="font-size: 12px;">
-                        <div>GEN<span class="number">3</span>RIC</div>
-                        <div>LABS</div>
-                    </div>
-                </div>
+                <img src="{% static 'images/gen3ric-labs-logo.svg' %}" alt="GEN3RIC LABS" class="gen3ric-logo-navbar">
                 <span style="color: #1e3a8a; font-weight: 600; margin-left: 8px;">NetWorth Tracker</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -310,25 +291,7 @@
                 <div class="col-lg-6 hero-content">
                     <!-- GEN3RIC LABS Logo -->
                     <div class="gen3ric-logo" style="justify-content: flex-start; margin-bottom: 2rem;">
-                        <div class="gen3ric-logo-icon">
-                            <div class="flask-icon">
-                                <div class="flask-outline">
-                                    <div class="flask-liquid"></div>
-                                </div>
-                                <div class="flask-bubbles">
-                                    <div class="bubble"></div>
-                                    <div class="bubble"></div>
-                                    <div class="bubble"></div>
-                                </div>
-                            </div>
-                            <div class="gen3ric-initials">
-                                <span class="gen3ric-g">G</span><span class="gen3ric-l">L</span>
-                            </div>
-                        </div>
-                        <div class="gen3ric-text">
-                            <div>GEN<span class="number">3</span>RIC</div>
-                            <div>LABS</div>
-                        </div>
+                        <img src="{% static 'images/gen3ric-labs-logo.svg' %}" alt="GEN3RIC LABS" class="gen3ric-logo-large">
                     </div>
                     
                     <h1 class="hero-title">NetWorth Tracker</h1>
@@ -531,25 +494,7 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="gen3ric-logo" style="justify-content: flex-start; margin-bottom: 1rem;">
-                        <div class="gen3ric-logo-icon">
-                            <div class="flask-icon" style="width: 28px; height: 35px;">
-                                <div class="flask-outline" style="border-width: 2px;">
-                                    <div class="flask-liquid"></div>
-                                </div>
-                                <div class="flask-bubbles" style="top: 7px;">
-                                    <div class="bubble" style="width: 3px; height: 3px;"></div>
-                                    <div class="bubble" style="width: 3px; height: 3px;"></div>
-                                    <div class="bubble" style="width: 3px; height: 3px;"></div>
-                                </div>
-                            </div>
-                            <div class="gen3ric-initials" style="font-size: 20px;">
-                                <span class="gen3ric-g">G</span><span class="gen3ric-l">L</span>
-                            </div>
-                        </div>
-                        <div class="gen3ric-text" style="font-size: 13px; color: white;">
-                            <div>GEN<span class="number">3</span>RIC</div>
-                            <div>LABS</div>
-                        </div>
+                        <img src="{% static 'images/gen3ric-labs-logo.svg' %}" alt="GEN3RIC LABS" class="gen3ric-logo-footer" style="filter: brightness(0) invert(1);">
                     </div>
                     <h5 style="color: white; margin-bottom: 0.5rem;">NetWorth Tracker</h5>
                     <p class="mb-0" style="color: #ccc;">Empowering you to take control of your financial future.</p>
