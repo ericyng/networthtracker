@@ -47,27 +47,27 @@ body {
 }
 
 .gen3ric-logo-small {
-    width: 120px;
-}
-
-.gen3ric-logo-medium {
-    width: 160px;
-}
-
-.gen3ric-logo-large {
-    width: 200px;
-}
-
-.gen3ric-logo-navbar {
     width: 100px;
 }
 
-.gen3ric-logo-sidebar {
+.gen3ric-logo-medium {
     width: 140px;
 }
 
-.gen3ric-logo-footer {
+.gen3ric-logo-large {
+    width: 180px;
+}
+
+.gen3ric-logo-navbar {
+    width: 80px;
+}
+
+.gen3ric-logo-sidebar {
     width: 120px;
+}
+
+.gen3ric-logo-footer {
+    width: 100px;
 }
 
 /* ===== BRAND HEADER ===== */
