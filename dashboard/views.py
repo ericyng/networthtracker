@@ -44,10 +44,10 @@ def parse_month(month_value):
         if 1 <= month_num <= 12:
             return month_num
     
-    # Handle month names
+    # Handle month names (including common misspellings)
     month_names = {
-        'january': 1, 'jan': 1,
-        'february': 2, 'feb': 2,
+        'january': 1, 'jan': 1, 'janurary': 1,  # Handle common misspelling
+        'february': 2, 'feb': 2, 'feburary': 2,  # Handle common misspelling
         'march': 3, 'mar': 3,
         'april': 4, 'apr': 4,
         'may': 5,
@@ -68,15 +68,23 @@ def parse_balance(balance_value):
     if isinstance(balance_value, (int, float)):
         return float(balance_value)
     
+    if balance_value is None or balance_value == '':
+        return 0.0
+    
     balance_str = str(balance_value).strip()
     
     # Remove currency symbols and commas
     balance_str = re.sub(r'[$,€£¥₹]', '', balance_str)
     balance_str = re.sub(r',', '', balance_str)
     
+    # Handle negative values with parentheses (e.g., "(1,234.56)")
+    if balance_str.startswith('(') and balance_str.endswith(')'):
+        balance_str = '-' + balance_str[1:-1]
+    
     try:
         return float(balance_str)
     except ValueError:
+        print(f"Warning: Could not parse balance value '{balance_value}' as float, using 0.0")
         return 0.0
 
 
@@ -328,39 +336,29 @@ def accounts_list(request):
         if account.classification != 'debts' and account.account_type != 'loan'
     )
     
-    # Group accounts into custom categories and calculate totals
-    accounts_by_category = {}
-    category_totals = {}
+    # Group accounts by classification (same as Add/Edit Entry view)
+    accounts_by_classification = {}
+    classification_totals = {}
     
     for account in accounts:
         balance = account.get_latest_balance()
+        classification = account.get_classification_display()
         
-        # Determine category based on account type and classification
-        if account.account_type in ['checking', 'savings']:
-            category = 'Cash'
-        elif account.account_type == 'investment' and account.classification not in ['pretax', 'posttax', 'roth', 'traditional', '401k', 'hsa', '529', 'fsa']:
-            category = 'Equity & Investments'
-        elif account.classification in ['pretax', 'posttax', 'roth', 'traditional', '401k', 'hsa', '529', 'fsa']:
-            category = 'Retirement'
-        elif account.asset_type == 'property':
-            category = 'Property'
-        elif account.asset_type == 'crypto':
-            category = 'Equity & Investments'
-        elif account.classification == 'debts' or account.account_type in ['loan', 'credit']:
-            category = 'Debts'
-        else:
-            category = 'Other'
-        
-        if category not in accounts_by_category:
-            accounts_by_category[category] = []
-            category_totals[category] = 0
-        accounts_by_category[category].append(account)
-        category_totals[category] += balance
+        if classification not in accounts_by_classification:
+            accounts_by_classification[classification] = []
+            classification_totals[classification] = 0
+        accounts_by_classification[classification].append(account)
+        classification_totals[classification] += balance
+    
+    # Debug information
+    print(f"DEBUG: Found {accounts.count()} accounts for user {request.user}")
+    print(f"DEBUG: Accounts by classification: {accounts_by_classification}")
+    print(f"DEBUG: Classification totals: {classification_totals}")
     
     context = {
         'accounts': accounts,
-        'accounts_by_category': accounts_by_category,
-        'category_totals': category_totals,
+        'accounts_by_classification': accounts_by_classification,
+        'classification_totals': classification_totals,
         'total_balance': total_balance,
         'total_debts': total_debts,
         'total_assets': total_assets,
@@ -798,40 +796,105 @@ def data_management(request):
                 
         elif action == 'import_entries':
             # Handle account entries import
+            print(f"DEBUG: Starting import_entries action")
             if 'csv_file' in request.FILES:
                 csv_file = request.FILES['csv_file']
+                print(f"DEBUG: CSV file received: {csv_file.name}, size: {csv_file.size}")
                 if csv_file.name.endswith('.csv'):
                     try:
                         # Decode the file content
                         decoded_file = csv_file.read().decode('utf-8').splitlines()
+                        print(f"DEBUG: Decoded {len(decoded_file)} lines from CSV")
                         reader = csv.DictReader(decoded_file)
+                        print(f"DEBUG: CSV headers: {reader.fieldnames}")
+                        
+                        # Validate CSV headers
+                        required_headers = ['account_name', 'month', 'year', 'balance']
+                        if not reader.fieldnames:
+                            messages.error(request, 'CSV file appears to be empty or malformed.')
+                            return render(request, 'dashboard/data_management.html', context)
+                            
+                        missing_headers = [h for h in required_headers if h not in reader.fieldnames]
+                        if missing_headers:
+                            messages.error(request, f'CSV is missing required headers: {", ".join(missing_headers)}. Found headers: {", ".join(reader.fieldnames)}')
+                            return render(request, 'dashboard/data_management.html', context)
                         
                         imported_count = 0
                         errors = []
                         
-                        for row in reader:
+                        for row_num, row in enumerate(reader, start=2):  # Start at 2 because row 1 is header
+                            print(f"DEBUG: Processing row {row_num}: {row}")
+                            
+                            # Skip empty rows
+                            if not row or all(not value.strip() for value in row.values()):
+                                print(f"DEBUG: Skipping empty row {row_num}")
+                                continue
+                                
                             try:
                                 # Find the account by name
                                 account_name = row.get('account_name', '').strip()
+                                print(f"DEBUG: Row {row_num} - account_name: '{account_name}'")
+                                if not account_name:
+                                    errors.append(f"Row {row_num}: Missing account name")
+                                    continue
+                                    
                                 account = Account.objects.filter(user=user, name=account_name).first()
+                                print(f"DEBUG: Row {row_num} - account found: {account}")
                                 
                                 if account:
-                                    # Create entry from CSV row
-                                    entry = AccountEntry(
+                                    # Parse month and year
+                                    month_raw = row.get('month', 1)
+                                    month = parse_month(month_raw)
+                                    print(f"DEBUG: Row {row_num} - month_raw: '{month_raw}', parsed: {month}")
+                                    
+                                    year_str = row.get('year', '2024')
+                                    print(f"DEBUG: Row {row_num} - year_str: '{year_str}'")
+                                    try:
+                                        year = int(year_str)
+                                        if year < 1900 or year > 2100:
+                                            errors.append(f"Row {row_num}: Invalid year {year_str}")
+                                            continue
+                                    except ValueError:
+                                        errors.append(f"Row {row_num}: Invalid year {year_str}")
+                                        continue
+                                    
+                                    balance_raw = row.get('balance', 0)
+                                    balance = parse_balance(balance_raw)
+                                    print(f"DEBUG: Row {row_num} - balance_raw: '{balance_raw}', parsed: {balance}")
+                                    
+                                    notes = row.get('notes', '').strip()
+                                    print(f"DEBUG: Row {row_num} - notes: '{notes}'")
+                                    
+                                    # Create or update entry from CSV row
+                                    entry, created = AccountEntry.objects.get_or_create(
                                         account=account,
-                                        month=parse_month(row.get('month', 1)),
-                                        year=int(row.get('year', 2024)),
-                                        balance=parse_balance(row.get('balance', 0)),
-                                        notes=row.get('notes', '').strip(),
+                                        month=month,
+                                        year=year,
+                                        defaults={
+                                            'balance': balance,
+                                            'notes': notes
+                                        }
                                     )
-                                    entry.save()
+                                    
+                                    if not created:
+                                        # Update existing entry
+                                        entry.balance = balance
+                                        entry.notes = notes
+                                        entry.save()
+                                    
                                     imported_count += 1
                                 else:
-                                    errors.append(f"Row {reader.line_num}: Account '{account_name}' not found")
+                                    errors.append(f"Row {row_num}: Account '{account_name}' not found")
                                     
                             except Exception as e:
-                                errors.append(f"Row {reader.line_num}: {str(e)}")
+                                errors.append(f"Row {row_num}: {str(e)}")
+                                print(f"Import error on row {row_num}: {str(e)}")
+                                print(f"Row data: {row}")
                         
+                        print(f"DEBUG: Import completed - imported: {imported_count}, errors: {len(errors)}")
+                        if errors:
+                            print(f"DEBUG: Error details: {errors}")
+                            
                         if imported_count > 0:
                             messages.success(request, f'Successfully imported {imported_count} account entries.')
                         if errors:

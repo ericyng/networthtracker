@@ -60,124 +60,238 @@
             </div>
             <div class="card-body">
                 {% if accounts %}
-                    {% for classification, accounts_in_group in accounts_by_classification.items %}
-                        <div class="mb-4">
-                            <h6 class="text-primary border-bottom pb-2 mb-3">
-                                <i class="bi bi-collection me-2"></i>{{ classification }}
-                                <span class="badge {% if classification == 'Debts' %}bg-danger{% else %}bg-success{% endif %} ms-2">
-                                    ${{ classification_totals|get_item:classification|floatformat:2|intcomma }}
-                                </span>
-                            </h6>
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th class="sortable" data-sort="name">
-                                                <a href="?sort=name&order={% if sort_by == 'name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-                                                    Account Name
-                                                    {% if sort_by == 'name' %}
-                                                        <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
-                                                    {% else %}
-                                                        <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
-                                                    {% endif %}
-                                                </a>
-                                            </th>
-                                            <th class="sortable" data-sort="account_type">
-                                                <a href="?sort=account_type&order={% if sort_by == 'account_type' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-                                                    Type
-                                                    {% if sort_by == 'account_type' %}
-                                                        <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
-                                                    {% else %}
-                                                        <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
-                                                    {% endif %}
-                                                </a>
-                                            </th>
-                                            <th class="sortable" data-sort="asset_type">
-                                                <a href="?sort=asset_type&order={% if sort_by == 'asset_type' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-                                                    Asset Type
-                                                    {% if sort_by == 'asset_type' %}
-                                                        <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
-                                                    {% else %}
-                                                        <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
-                                                    {% endif %}
-                                                </a>
-                                            </th>
-                                            <th class="sortable" data-sort="institution">
-                                                <a href="?sort=institution&order={% if sort_by == 'institution' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-                                                    Institution
-                                                    {% if sort_by == 'institution' %}
-                                                        <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
-                                                    {% else %}
-                                                        <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
-                                                    {% endif %}
-                                                </a>
-                                            </th>
-                                            <th class="sortable text-end" data-sort="balance">
-                                                <a href="?sort=balance&order={% if sort_by == 'balance' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-                                                    Balance
-                                                    {% if sort_by == 'balance' %}
-                                                        <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
-                                                    {% else %}
-                                                        <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
-                                                    {% endif %}
-                                                </a>
-                                            </th>
-                                            <th class="text-center">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for account in accounts_in_group %}
+                    {% if accounts_by_classification %}
+                        {% for classification, accounts_in_group in accounts_by_classification.items %}
+                            <div class="mb-4">
+                                <h6 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="bi bi-collection me-2"></i>{{ classification }}
+                                    <span class="badge {% if classification == 'Debts' %}bg-danger{% else %}bg-success{% endif %} ms-2">
+                                        <span class="{% if classification == 'Debts' %}debt-value{% else %}asset-value{% endif %}">
+                                            ${{ classification_totals|get_item:classification|floatformat:2|intcomma }}
+                                        </span>
+                                    </span>
+                                </h6>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
                                             <tr>
-                                                <td>
-                                                    <div class="fw-bold">{{ account.name }}</div>
-                                                    {% if account.account_number %}
-                                                        <small class="text-muted">#{{ account.account_number }}</small>
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    <span class="badge bg-secondary">{{ account.get_account_type_display }}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="badge bg-warning">{{ account.get_asset_type_display }}</span>
-                                                </td>
-                                                <td>
-                                                    {% if account.institution %}
-                                                        {{ account.institution }}
-                                                    {% else %}
-                                                        <span class="text-muted">-</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td class="text-end">
-                                                    <span class="fw-bold {% if account.get_latest_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
-                                                        ${{ account.get_latest_balance|floatformat:2|intcomma }}
-                                                    </span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <div class="btn-group" role="group">
-                                                        <a href="{% url 'dashboard:account_detail' account.id %}" 
-                                                           class="btn btn-sm btn-outline-primary" 
-                                                           title="View Details">
-                                                            <i class="bi bi-eye"></i>
-                                                        </a>
-                                                        <a href="{% url 'dashboard:account_edit' account.id %}" 
-                                                           class="btn btn-sm btn-outline-warning" 
-                                                           title="Edit">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </a>
-                                                        <a href="{% url 'dashboard:account_delete' account.id %}" 
-                                                           class="btn btn-sm btn-outline-danger" 
-                                                           title="Delete">
-                                                            <i class="bi bi-trash"></i>
-                                                        </a>
-                                                    </div>
-                                                </td>
+                                                <th class="sortable" data-sort="name">
+                                                    <a href="?sort=name&order={% if sort_by == 'name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                        Account Name
+                                                        {% if sort_by == 'name' %}
+                                                            <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                </th>
+                                                <th class="sortable" data-sort="account_type">
+                                                    <a href="?sort=account_type&order={% if sort_by == 'account_type' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                        Type
+                                                        {% if sort_by == 'account_type' %}
+                                                            <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                </th>
+                                                <th class="sortable" data-sort="asset_type">
+                                                    <a href="?sort=asset_type&order={% if sort_by == 'asset_type' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                        Asset Type
+                                                        {% if sort_by == 'asset_type' %}
+                                                            <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                </th>
+                                                <th class="sortable" data-sort="institution">
+                                                    <a href="?sort=institution&order={% if sort_by == 'institution' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                        Institution
+                                                        {% if sort_by == 'institution' %}
+                                                            <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                </th>
+                                                <th class="sortable text-end" data-sort="balance">
+                                                    <a href="?sort=balance&order={% if sort_by == 'balance' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                        Balance
+                                                        {% if sort_by == 'balance' %}
+                                                            <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                </th>
+                                                <th class="text-center">Actions</th>
                                             </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {% for account in accounts_in_group %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="fw-bold">{{ account.name }}</div>
+                                                        {% if account.account_number %}
+                                                            <small class="text-muted">#{{ account.account_number }}</small>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-secondary">{{ account.get_account_type_display }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-warning">{{ account.get_asset_type_display }}</span>
+                                                    </td>
+                                                    <td>
+                                                        {% if account.institution %}
+                                                            {{ account.institution }}
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <span class="fw-bold {% if account.get_latest_balance >= 0 %}positive-value{% else %}negative-value{% endif %}">
+                                                            ${{ account.get_latest_balance|floatformat:2|intcomma }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="btn-group" role="group">
+                                                            <a href="{% url 'dashboard:account_detail' account.id %}" 
+                                                               class="btn btn-sm btn-outline-primary" 
+                                                               title="View Details">
+                                                                <i class="bi bi-eye"></i>
+                                                            </a>
+                                                            <a href="{% url 'dashboard:account_edit' account.id %}" 
+                                                               class="btn btn-sm btn-outline-warning" 
+                                                               title="Edit">
+                                                                <i class="bi bi-pencil"></i>
+                                                            </a>
+                                                            <a href="{% url 'dashboard:account_delete' account.id %}" 
+                                                               class="btn btn-sm btn-outline-danger" 
+                                                               title="Delete">
+                                                                <i class="bi bi-trash"></i>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Fallback: Show all accounts in a single table if classification fails -->
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" data-sort="name">
+                                            <a href="?sort=name&order={% if sort_by == 'name' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                Account Name
+                                                {% if sort_by == 'name' %}
+                                                    <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                {% else %}
+                                                    <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                {% endif %}
+                                            </a>
+                                        </th>
+                                        <th class="sortable" data-sort="account_type">
+                                            <a href="?sort=account_type&order={% if sort_by == 'account_type' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                Type
+                                                {% if sort_by == 'account_type' %}
+                                                    <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                {% else %}
+                                                    <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                {% endif %}
+                                            </a>
+                                        </th>
+                                        <th class="sortable" data-sort="asset_type">
+                                            <a href="?sort=asset_type&order={% if sort_by == 'asset_type' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                Asset Type
+                                                {% if sort_by == 'asset_type' %}
+                                                    <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                {% else %}
+                                                    <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                {% endif %}
+                                            </a>
+                                        </th>
+                                        <th class="sortable" data-sort="institution">
+                                            <a href="?sort=institution&order={% if sort_by == 'institution' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                Institution
+                                                {% if sort_by == 'institution' %}
+                                                    <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                {% else %}
+                                                    <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                {% endif %}
+                                            </a>
+                                        </th>
+                                        <th class="sortable text-end" data-sort="balance">
+                                            <a href="?sort=balance&order={% if sort_by == 'balance' and order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+                                                Balance
+                                                {% if sort_by == 'balance' %}
+                                                    <i class="bi bi-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                                {% else %}
+                                                    <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                                                {% endif %}
+                                            </a>
+                                        </th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for account in accounts %}
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold">{{ account.name }}</div>
+                                                {% if account.account_number %}
+                                                    <small class="text-muted">#{{ account.account_number }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ account.get_account_type_display }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-warning">{{ account.get_asset_type_display }}</span>
+                                            </td>
+                                            <td>
+                                                {% if account.institution %}
+                                                    {{ account.institution }}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end">
+                                                                                                        <span class="fw-bold {% if account.get_latest_balance >= 0 %}positive-value{% else %}negative-value{% endif %}">
+                                                            ${{ account.get_latest_balance|floatformat:2|intcomma }}
+                                                        </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a href="{% url 'dashboard:account_detail' account.id %}" 
+                                                       class="btn btn-sm btn-outline-primary" 
+                                                       title="View Details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'dashboard:account_edit' account.id %}" 
+                                                       class="btn btn-sm btn-outline-warning" 
+                                                       title="Edit">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <a href="{% url 'dashboard:account_delete' account.id %}" 
+                                                       class="btn btn-sm btn-outline-danger" 
+                                                       title="Delete">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                    {% endfor %}
+                    {% endif %}
                 {% else %}
                     <div class="text-center py-5">
                         <i class="bi bi-bank display-1 text-muted"></i>

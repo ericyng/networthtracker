@@ -62,7 +62,9 @@
                                     <h6 class="text-primary border-bottom pb-2 mb-3">
                                         <i class="bi bi-collection me-2"></i>{{ classification }}
                                         <span class="badge {% if classification == 'Debts' %}bg-danger{% else %}bg-success{% endif %} ms-2">
-                                            ${{ classification_totals|get_item:classification|floatformat:2|intcomma }}
+                                            <span class="{% if classification == 'Debts' %}debt-value{% else %}asset-value{% endif %}">
+                                                ${{ classification_totals|get_item:classification|floatformat:2|intcomma }}
+                                            </span>
                                         </span>
                                     </h6>
                                     <div class="table-responsive">
