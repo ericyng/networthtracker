@@ -41,4 +41,7 @@ urlpatterns = [
     # Legal URLs
     path('terms/', views.terms_of_service, name='terms_of_service'),
     path('privacy/', views.privacy_policy, name='privacy_policy'),
+    
+    # Signup disabled
+    path('signup-disabled/', views.signup_disabled, name='signup_disabled'),
 ] 

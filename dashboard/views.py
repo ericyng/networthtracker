@@ -31,6 +31,11 @@ def landing_page(request):
     return render(request, 'dashboard/landing.html')
 
 
+def signup_disabled(request):
+    """View for when sign-ups are disabled"""
+    return render(request, 'dashboard/signup_disabled.html')
+
+
 def parse_month(month_value):
     """Convert month value to integer (1-12)"""
     if isinstance(month_value, int):

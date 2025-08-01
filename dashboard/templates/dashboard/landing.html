@@ -279,7 +279,7 @@
                         <a class="nav-link" href="{% url 'account_login' %}">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link btn btn-primary btn-sm text-white px-3" href="{% url 'account_signup' %}">Sign Up</a>
+                        <a class="nav-link btn btn-secondary btn-sm text-white px-3" href="{% url 'dashboard:signup_disabled' %}">Sign-ups Disabled</a>
                     </li>
                 </ul>
             </div>
@@ -296,8 +296,8 @@
                         Track your financial growth with precision and ease. Monitor your net worth, track investments, and visualize your financial progress with our comprehensive personal finance dashboard.
                     </p>
                     <div class="d-flex flex-wrap gap-3">
-                        <a href="{% url 'account_signup' %}" class="btn-hero btn-primary-hero">
-                            <i class="bi bi-rocket-takeoff me-2"></i>Get Started, it's Free
+                        <a href="{% url 'dashboard:signup_disabled' %}" class="btn-hero btn-primary-hero">
+                            <i class="bi bi-gear me-2"></i>Sign-ups Temporarily Disabled
                         </a>
                         <a href="{% url 'account_login' %}" class="btn-hero btn-outline-hero">
                             <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
@@ -475,8 +475,8 @@
             <h2 class="cta-title">Ready to Start Your Financial Journey?</h2>
             <p class="cta-subtitle">Join thousands of users who are already tracking their net worth and achieving their financial goals.</p>
             <div class="d-flex flex-wrap justify-content-center gap-3">
-                <a href="{% url 'account_signup' %}" class="btn-hero btn-primary-hero">
-                    <i class="bi bi-rocket-takeoff me-2"></i>Start Tracking Today
+                <a href="{% url 'dashboard:signup_disabled' %}" class="btn-hero btn-primary-hero">
+                    <i class="bi bi-gear me-2"></i>Sign-ups Temporarily Disabled
                 </a>
                 <a href="{% url 'account_login' %}" class="btn-hero btn-outline-hero">
                     <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Your Account

@@ -42,10 +42,10 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.facebook',
-    'allauth.socialaccount.providers.apple',
+    # 'allauth.socialaccount',  # Disabled temporarily
+    # 'allauth.socialaccount.providers.google',  # Disabled temporarily
+    # 'allauth.socialaccount.providers.facebook',  # Disabled temporarily
+    # 'allauth.socialaccount.providers.apple',  # Disabled temporarily
     # Local apps
     'users',
     'dashboard',
@@ -176,6 +176,10 @@ ACCOUNT_LOGIN_METHODS = {'username', 'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 LOGIN_REDIRECT_URL = '/'
+
+# Disable sign-ups temporarily
+ACCOUNT_ADAPTER = 'users.adapters.CustomAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'users.adapters.CustomSocialAccountAdapter'
 
 # Social authentication settings
 SOCIALACCOUNT_PROVIDERS = {
