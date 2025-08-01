@@ -27,13 +27,16 @@ print_error() {
 }
 
 # Check if we're on the server (adjust path as needed)
-if [ -d "/var/www/gen3ric-labs.com" ]; then
+if [ -d "/var/www/net-worth-tracker.gen3ric-labs.com" ]; then
     print_status "Detected server environment"
+    PROJECT_DIR="/var/www/net-worth-tracker.gen3ric-labs.com"
+elif [ -d "/var/www/gen3ric-labs.com" ]; then
+    print_status "Detected gen3ric-labs.com environment"
     PROJECT_DIR="/var/www/gen3ric-labs.com"
 else
     print_warning "Not on server - this script should be run on the server"
     print_status "For local testing, you can modify PROJECT_DIR variable"
-    PROJECT_DIR="/var/www/gen3ric-labs.com"
+    PROJECT_DIR="/var/www/net-worth-tracker.gen3ric-labs.com"
 fi
 
 # Navigate to project directory
@@ -51,7 +54,8 @@ fi
 
 # Backup current state (optional)
 print_status "Creating backup of current state..."
-cp -r . ../gen3ric-labs-backup-$(date +%Y%m%d-%H%M%S) 2>/dev/null || print_warning "Could not create backup"
+backup_name="backup-$(date +%Y%m%d-%H%M%S)"
+cp -r . ../"$backup_name" 2>/dev/null || print_warning "Could not create backup"
 
 # Pull latest changes from git
 print_status "Pulling latest changes from git..."
@@ -73,19 +77,69 @@ if [ -d "/var/www" ]; then
     chmod -R 755 "$PROJECT_DIR" 2>/dev/null || print_warning "Could not set permissions"
 fi
 
+# Django-specific deployment steps for NetWorth Tracker
+if [[ "$PROJECT_DIR" == *"net-worth-tracker"* ]]; then
+    print_status "Running Django deployment steps..."
+    
+    # Activate virtual environment if it exists
+    if [ -d "venv" ]; then
+        print_status "Activating virtual environment..."
+        source venv/bin/activate
+    fi
+    
+    # Install/update dependencies
+    print_status "Installing dependencies..."
+    pip install -r requirements.txt
+    
+    # Run migrations
+    print_status "Running database migrations..."
+    python manage.py migrate
+    
+    # Collect static files
+    print_status "Collecting static files..."
+    python manage.py collectstatic --noinput
+    
+    # Create logs directory if it doesn't exist
+    print_status "Creating logs directory..."
+    mkdir -p logs
+    
+    # Set proper permissions for Django
+    print_status "Setting Django file permissions..."
+    chmod 755 staticfiles/ 2>/dev/null || print_warning "Could not set staticfiles permissions"
+    chmod 644 logs/ 2>/dev/null || print_warning "Could not set logs permissions"
+    
+    print_status "Django deployment steps completed"
+fi
+
 # Restart web server if needed (uncomment if using systemd)
 # print_status "Restarting web server..."
 # systemctl reload nginx 2>/dev/null || print_warning "Could not reload nginx"
 
 print_status "Deployment completed successfully! 🎉"
-print_status "Your changes are now live at https://gen3ric-labs.com"
 
-# Optional: Check if site is responding
-print_status "Checking if site is responding..."
-if curl -s -o /dev/null -w "%{http_code}" https://gen3ric-labs.com | grep -q "200\|301\|302"; then
-    print_status "Site is responding correctly"
+# Determine which site to check based on project directory
+if [[ "$PROJECT_DIR" == *"net-worth-tracker"* ]]; then
+    SITE_URL="https://net-worth-tracker.gen3ric-labs.com"
+    print_status "Your changes are now live at $SITE_URL"
+    
+    # Optional: Check if site is responding
+    print_status "Checking if site is responding..."
+    if curl -s -o /dev/null -w "%{http_code}" "$SITE_URL" | grep -q "200\|301\|302"; then
+        print_status "Site is responding correctly"
+    else
+        print_warning "Site might not be responding correctly - check manually"
+    fi
 else
-    print_warning "Site might not be responding correctly - check manually"
+    SITE_URL="https://gen3ric-labs.com"
+    print_status "Your changes are now live at $SITE_URL"
+    
+    # Optional: Check if site is responding
+    print_status "Checking if site is responding..."
+    if curl -s -o /dev/null -w "%{http_code}" "$SITE_URL" | grep -q "200\|301\|302"; then
+        print_status "Site is responding correctly"
+    else
+        print_warning "Site might not be responding correctly - check manually"
+    fi
 fi
 
 echo ""
