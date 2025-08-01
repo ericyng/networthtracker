@@ -13,7 +13,6 @@ WORKDIR /app
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         gcc \
-        g++ \
         postgresql-client \
         libpq-dev \
         libjpeg-dev \
@@ -26,12 +25,11 @@ RUN apt-get update \
         libharfbuzz-dev \
         libfribidi-dev \
         libxcb1-dev \
-        pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --upgrade pip setuptools wheel
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project

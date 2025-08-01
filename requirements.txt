@@ -1,49 +1,24 @@
-# Core Django
-Django==4.2.23
 asgiref==3.9.1
-
-# Database
-psycopg2-binary==2.9.9
-
-# Web server
-gunicorn==21.2.0
-
-# Authentication
-django-allauth==65.10.0
-PyJWT==2.10.1
-
-# API
-djangorestframework==3.16.0
-
-# HTTP requests
-requests==2.32.4
-urllib3==2.5.0
 certifi==2025.7.14
-charset-normalizer==3.4.2
-idna==3.10
-
-# Image processing
-pillow==11.3.0
-
-# Excel processing
-openpyxl==3.1.5
-et_xmlfile==2.0.0
-
-# PDF generation
-reportlab==4.4.3
-
-# Caching
-redis==5.0.1
-
-# Security
-cryptography==45.0.5
 cffi==1.17.1
-pycparser==2.22
-
-# OAuth
+charset-normalizer==3.4.2
+cryptography==45.0.5
+Django==4.2.23
+django-allauth==65.10.0
+djangorestframework==3.16.0
+et_xmlfile==2.0.0
+gunicorn==21.2.0
+idna==3.10
 oauthlib==3.3.1
+openpyxl==3.1.5
+pillow==11.3.0
+psycopg2-binary==2.9.9
+pycparser==2.22
+PyJWT==2.10.1
+redis==5.0.1
+reportlab==4.4.3
+requests==2.32.4
 requests-oauthlib==2.0.0
-
-# Utilities
 sqlparse==0.5.3
 typing_extensions==4.14.1
+urllib3==2.5.0
