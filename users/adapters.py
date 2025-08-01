@@ -6,13 +6,13 @@ from django.urls import reverse
 
 class CustomAccountAdapter(DefaultAccountAdapter):
     """
-    Custom account adapter to disable sign-ups
+    Custom account adapter to allow regular sign-ups but disable social logins
     """
     def is_open_for_signup(self, request):
         """
-        Disable sign-ups by returning False
+        Allow regular email sign-ups
         """
-        return False
+        return True
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     """
