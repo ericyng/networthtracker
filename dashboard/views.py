@@ -813,10 +813,23 @@ def data_management(request):
                         reader = csv.DictReader(decoded_file)
                         print(f"DEBUG: CSV headers: {reader.fieldnames}")
                         
-                        # Validate CSV headers
-                        required_headers = ['account_name', 'month', 'year', 'balance']
+                        # Validate CSV headers - handle both account_name and account__name formats
+                        required_headers = ['month', 'year', 'balance']
+                        account_header_options = ['account_name', 'account__name']
+                        
                         if not reader.fieldnames:
                             messages.error(request, 'CSV file appears to be empty or malformed.')
+                            return render(request, 'dashboard/data_management.html', context)
+                        
+                        # Check if we have an account header (either format)
+                        account_header = None
+                        for header in account_header_options:
+                            if header in reader.fieldnames:
+                                account_header = header
+                                break
+                        
+                        if not account_header:
+                            messages.error(request, f'CSV is missing account header. Expected one of: {", ".join(account_header_options)}. Found headers: {", ".join(reader.fieldnames)}')
                             return render(request, 'dashboard/data_management.html', context)
                             
                         missing_headers = [h for h in required_headers if h not in reader.fieldnames]
@@ -837,8 +850,8 @@ def data_management(request):
                                 
                             try:
                                 # Find the account by name
-                                account_name = row.get('account_name', '').strip()
-                                print(f"DEBUG: Row {row_num} - account_name: '{account_name}'")
+                                account_name = row.get(account_header, '').strip()
+                                print(f"DEBUG: Row {row_num} - account_name: '{account_name}' (from header: {account_header})")
                                 if not account_name:
                                     errors.append(f"Row {row_num}: Missing account name")
                                     continue
@@ -939,12 +952,12 @@ def export_csv(request, data_type):
     elif data_type == 'transactions':
         data = Transaction.objects.filter(account__user=user)
         filename = f'transactions_{user.username}_{timezone.now().strftime("%Y%m%d")}.csv'
-        fieldnames = ['account__name', 'amount', 'transaction_type', 'category', 'description', 'date', 'created_at']
+        fieldnames = ['account_name', 'amount', 'transaction_type', 'category', 'description', 'date', 'created_at']
         
     elif data_type == 'entries':
         data = AccountEntry.objects.filter(account__user=user)
         filename = f'account_entries_{user.username}_{timezone.now().strftime("%Y%m%d")}.csv'
-        fieldnames = ['account__name', 'month', 'year', 'balance', 'notes', 'created_at']
+        fieldnames = ['account_name', 'month', 'year', 'balance', 'notes', 'created_at']
     
     else:
         return HttpResponse('Invalid data type', status=400)
@@ -958,7 +971,10 @@ def export_csv(request, data_type):
     for item in data:
         row = {}
         for field in fieldnames:
-            if '__' in field:
+            if field == 'account_name':
+                # Handle account name field
+                row[field] = str(item.account.name) if item.account else ''
+            elif '__' in field:
                 # Handle related fields
                 parts = field.split('__')
                 value = item
