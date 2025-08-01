@@ -1,76 +1,245 @@
-# PickupKids
+# Net Worth Tracker
 
-A coordination app for busy parents to manage pickup and dropoff schedules for their children.
+A comprehensive personal finance management application that helps you track your net worth, manage accounts, and monitor your financial progress over time.
 
 ## 🚀 Features
 
 ### Core Functionality
-- **Schedule Management:** Create and manage pickup/dropoff schedules
-- **Multi-Parent Coordination:** Coordinate between 2+ adults
-- **Location Support:** Different pickup and dropoff locations
-- **Push Notifications:** Reminders and coordination requests
-- **Multi-Child Support:** Handle families with multiple children
+- **Net Worth Tracking:** Monitor your total net worth with monthly snapshots
+- **Account Management:** Track multiple account types (checking, savings, investments, loans, etc.)
+- **Transaction Tracking:** Record income, expenses, and transfers
+- **Financial Analytics:** Visualize your financial progress with charts and reports
+- **Data Export:** Export your data in CSV, Excel, and PDF formats
+- **Multi-Currency Support:** Track accounts in different currencies
+- **Asset Classification:** Categorize assets by type (cash, crypto, property, etc.)
 
-### Platform Support
-- **Web App:** React.js frontend
-- **Mobile Apps:** React Native (iOS & Android)
-- **Backend API:** Django REST Framework
+### Account Types Supported
+- **Banking:** Checking, Savings, Credit Cards
+- **Investments:** 401(k), IRA, Roth IRA, 529 Plans, HSA, FSA
+- **Assets:** Real Estate, Vehicles, Jewelry, Art, Electronics
+- **Liabilities:** Loans, Credit Cards, Mortgages
 
 ## 🏗️ Project Structure
 
 ```
-pickupkids/
-├── backend/           # Django REST API
-├── web-app/          # React.js web application
-├── mobile-app/       # React Native mobile apps
-├── docs/             # Documentation
-└── deployment/       # Deployment configurations
+networthtracker/
+├── backend/           # Django backend application
+│   ├── settings.py    # Django settings
+│   ├── urls.py        # Main URL configuration
+│   └── wsgi.py        # WSGI configuration
+├── dashboard/         # Main dashboard app
+│   ├── models.py      # Data models (Account, Transaction, AccountEntry)
+│   ├── views.py       # Business logic and views
+│   ├── forms.py       # Form definitions
+│   └── templates/     # HTML templates
+├── users/             # User management app
+├── static/            # Static files (CSS, images)
+├── templates/         # Global templates
+├── docker-compose.yml # Docker Compose configuration
+├── Dockerfile         # Docker container definition
+└── requirements.txt   # Python dependencies
 ```
 
 ## 🛠️ Tech Stack
 
-- **Backend:** Django, Django REST Framework, PostgreSQL
-- **Frontend:** React.js, TypeScript
-- **Mobile:** React Native, Expo
-- **Notifications:** Firebase Cloud Messaging
-- **Real-time:** WebSockets
-- **Deployment:** Docker, AWS/Vercel
+- **Backend:** Django 4.2, Django REST Framework
+- **Database:** PostgreSQL (production), SQLite (development)
+- **Authentication:** Django Allauth
+- **Frontend:** Django Templates, Bootstrap CSS
+- **Charts:** Chart.js (via CDN)
+- **Deployment:** Docker, Docker Compose, Nginx
+- **Caching:** Redis
+- **File Processing:** OpenPyXL, ReportLab
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Python 3.8+
-- Node.js 16+
-- PostgreSQL
-- React Native development environment
+- Docker and Docker Compose
+- Git
 
-### Quick Start
-1. Clone the repository
-2. Set up the backend API
-3. Configure the web app
-4. Set up mobile development environment
+### Quick Start with Docker
 
-## 📱 Use Cases
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd networthtracker
+   ```
 
-### Single Child
-- Easy coordination between 2+ adults
-- One dropoff location
-- Different pickup locations supported
+2. **Set up environment variables**
+   ```bash
+   cp env.example .env
+   # Edit .env with your configuration
+   ```
 
-### Multiple Children
-- Same coordination flow
-- Calendar display for all children
-- Individual scheduling per child
+3. **Start the application**
+   ```bash
+   docker-compose up -d
+   ```
 
-## 🔄 Development Workflow
+4. **Access the application**
+   - Web app: http://localhost:8080
+   - Admin panel: http://localhost:8080/admin
 
-1. **API First:** Backend API development
-2. **Web App:** React.js frontend
-3. **Mobile Apps:** React Native implementation
-4. **Integration:** Connect all platforms
-5. **Testing:** Cross-platform testing
-6. **Deployment:** Production deployment
+### Development Setup
+
+1. **Create virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Run migrations**
+   ```bash
+   python manage.py migrate
+   ```
+
+4. **Create superuser**
+   ```bash
+   python manage.py createsuperuser
+   ```
+
+5. **Start development server**
+   ```bash
+   python manage.py runserver
+   ```
+
+## 📊 Data Models
+
+### Account
+- **User:** Owner of the account
+- **Name:** Account name
+- **Type:** Checking, Savings, Investment, Loan, etc.
+- **Classification:** Pre-tax, Post-tax, Roth, Traditional IRA, etc.
+- **Asset Type:** Cash, Crypto, Property, Vehicles, etc.
+- **Currency:** USD, EUR, etc.
+- **Institution:** Bank or financial institution name
+- **Account Number:** Account identifier (optional)
+
+### Transaction
+- **User:** Owner of the transaction
+- **Account:** Associated account
+- **Amount:** Transaction amount
+- **Type:** Income, Expense, Transfer
+- **Category:** Salary, Food, Transportation, etc.
+- **Description:** Transaction description
+- **Date:** Transaction date
+
+### AccountEntry
+- **Account:** Associated account
+- **Month/Year:** Monthly snapshot period
+- **Balance:** Account balance for the period
+- **Notes:** Additional notes
+
+## 🔧 Configuration
+
+### Environment Variables
+- `DEBUG`: Django debug mode
+- `SECRET_KEY`: Django secret key
+- `DATABASE_URL`: Database connection string
+- `ALLOWED_HOSTS`: Comma-separated list of allowed hosts
+- `REDIS_URL`: Redis connection string
+
+### Docker Configuration
+The application uses Docker Compose with the following services:
+- **web:** Django application
+- **db:** PostgreSQL database
+- **nginx:** Reverse proxy
+- **redis:** Caching and sessions
+
+## 📈 Features in Detail
+
+### Dashboard
+- Net worth overview with charts
+- Account balances summary
+- Recent transactions
+- Monthly progress tracking
+
+### Account Management
+- Create, edit, and delete accounts
+- Track account balances over time
+- Categorize accounts by type and classification
+- Support for multiple currencies
+
+### Transaction Tracking
+- Record income, expenses, and transfers
+- Categorize transactions
+- Link transactions to specific accounts
+- Transaction history and reporting
+
+### Data Export
+- **CSV Export:** Raw data export
+- **Excel Export:** Formatted reports with charts
+- **PDF Export:** Professional reports
+
+### Data Management
+- Bulk import from CSV/Excel files
+- Data validation and error handling
+- Duplicate detection and cleanup
+- Data backup and restore
+
+## 🔒 Security
+
+- User authentication with Django Allauth
+- CSRF protection
+- SQL injection prevention
+- XSS protection
+- Secure password handling
+
+## 🚀 Deployment
+
+### Production Deployment
+1. Set up a production server with Docker
+2. Configure environment variables
+3. Set up SSL certificates
+4. Configure domain and DNS
+5. Run `docker-compose -f docker-compose.prod.yml up -d`
+
+### Environment-Specific Settings
+- `development_settings.py`: Development configuration
+- `docker_settings.py`: Docker environment configuration
+- `production_settings.py`: Production configuration
+
+## 📝 API Endpoints
+
+The application provides web-based interface with the following main endpoints:
+
+- `/dashboard/` - Main dashboard
+- `/dashboard/accounts/` - Account management
+- `/dashboard/transactions/` - Transaction management
+- `/dashboard/entries/` - Account entries management
+- `/dashboard/settings/` - User settings
+- `/dashboard/data-management/` - Data import/export
+- `/admin/` - Django admin interface
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## 📄 License
 
-MIT License - see LICENSE file for details
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the GitHub repository
+- Contact the development team
+- Check the documentation in the `/docs/` directory
+
+## 🔄 Changelog
+
+### Version 1.0.0
+- Initial release
+- Core net worth tracking functionality
+- Account and transaction management
+- Data export capabilities
+- Docker deployment support

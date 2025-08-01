@@ -1,425 +1,277 @@
-# PickupKids API Design
+# Net Worth Tracker - Application Design
 
 ## Overview
 
-The PickupKids API is a RESTful service built with Django REST Framework that provides endpoints for managing family coordination, scheduling, and notifications.
+The Net Worth Tracker is a comprehensive personal finance management application built with Django that helps users track their net worth, manage accounts, and monitor financial progress over time.
 
-## Base URL
-```
-https://api.pickupkids.com/v1/
-```
+## Application Architecture
 
-## Authentication
+### Technology Stack
+- **Backend Framework:** Django 4.2
+- **Database:** PostgreSQL (production), SQLite (development)
+- **Authentication:** Django Allauth
+- **Frontend:** Django Templates with Bootstrap
+- **Charts:** Chart.js (CDN)
+- **Deployment:** Docker, Docker Compose, Nginx
+- **Caching:** Redis
+- **File Processing:** OpenPyXL, ReportLab
 
-All API requests require authentication using JWT tokens.
+### Core Components
 
-### Headers
-```
-Authorization: Bearer <access_token>
-Content-Type: application/json
-```
+#### 1. User Management (`users/`)
+- Custom user model extensions
+- Authentication views and forms
+- Social authentication support (currently disabled)
 
-## Core Endpoints
+#### 2. Dashboard Application (`dashboard/`)
+- Main application logic
+- Data models and business logic
+- Views and templates
+- Data import/export functionality
 
-### Authentication
+#### 3. Backend Configuration (`backend/`)
+- Django project settings
+- URL routing
+- WSGI/ASGI configuration
 
-#### POST /auth/login/
-Login with email and password.
+## Data Models
 
-**Request:**
-```json
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-**Response:**
-```json
-{
-  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-  "user": {
-    "id": 1,
-    "email": "user@example.com",
-    "first_name": "John",
-    "last_name": "Doe"
-  }
-}
-```
-
-#### POST /auth/register/
-Register a new user account.
-
-**Request:**
-```json
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "first_name": "John",
-  "last_name": "Doe"
-}
+### Account Model
+```python
+class Account(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    account_type = models.CharField(choices=ACCOUNT_TYPES)
+    classification = models.CharField(choices=CLASSIFICATION_TYPES)
+    asset_type = models.CharField(choices=ASSET_TYPES)
+    currency = models.CharField(max_length=3, default='USD')
+    institution = models.CharField(max_length=100, blank=True)
+    account_number = models.CharField(max_length=50, blank=True)
+    is_active = models.BooleanField(default=True)
 ```
 
-#### POST /auth/refresh/
-Refresh access token.
+**Account Types:**
+- checking, savings, credit, investment, loan, other
 
-**Request:**
-```json
-{
-  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
-}
+**Classifications:**
+- pretax, posttax, roth, traditional, 401k, 529, hsa, fsa, taxable, debts, other
+
+**Asset Types:**
+- cash, crypto, property, vehicles, jewelry, art, electronics, furniture, clothing, books, sports, tools, other
+
+### Transaction Model
+```python
+class Transaction(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    transaction_type = models.CharField(choices=TRANSACTION_TYPES)
+    category = models.CharField(choices=CATEGORIES)
+    description = models.CharField(max_length=200)
+    date = models.DateField()
 ```
 
-### Families
+**Transaction Types:**
+- income, expense, transfer
 
-#### GET /families/
-Get all families for the authenticated user.
+**Categories:**
+- salary, freelance, investment, food, transportation, housing, utilities, entertainment, shopping, healthcare, education, travel, other
 
-**Response:**
-```json
-{
-  "count": 1,
-  "results": [
-    {
-      "id": 1,
-      "name": "Smith Family",
-      "created_at": "2023-01-01T00:00:00Z",
-      "members": [
-        {
-          "id": 1,
-          "user": {
-            "id": 1,
-            "email": "john@example.com",
-            "first_name": "John",
-            "last_name": "Smith"
-          },
-          "role": "parent"
-        }
-      ]
-    }
-  ]
-}
+### AccountEntry Model
+```python
+class AccountEntry(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    month = models.IntegerField(choices=[(i, i) for i in range(1, 13)])
+    year = models.IntegerField()
+    balance = models.DecimalField(max_digits=15, decimal_places=2)
+    notes = models.TextField(blank=True)
 ```
 
-#### POST /families/
-Create a new family.
+## URL Structure
 
-**Request:**
-```json
-{
-  "name": "Smith Family"
-}
+### Main Application URLs
+```
+/                           # Redirects to dashboard landing
+/dashboard/                  # Main dashboard
+/dashboard/accounts/         # Account management
+/dashboard/transactions/     # Transaction management
+/dashboard/entries/          # Account entries management
+/dashboard/settings/         # User settings
+/dashboard/data-management/  # Data import/export
+/admin/                      # Django admin interface
 ```
 
-#### GET /families/{id}/
-Get family details.
-
-#### PUT /families/{id}/
-Update family information.
-
-#### DELETE /families/{id}/
-Delete family.
-
-### Children
-
-#### GET /children/
-Get all children for the authenticated user's families.
-
-**Response:**
-```json
-{
-  "count": 2,
-  "results": [
-    {
-      "id": 1,
-      "name": "Emma Smith",
-      "age": 8,
-      "family": 1,
-      "preferences": {
-        "favorite_color": "blue",
-        "allergies": ["nuts"]
-      },
-      "photo_url": "https://example.com/photo.jpg"
-    }
-  ]
-}
+### Authentication URLs (Django Allauth)
+```
+/accounts/login/             # User login
+/accounts/logout/            # User logout
+/accounts/signup/            # User registration
+/accounts/password/reset/    # Password reset
 ```
 
-#### POST /children/
-Add a child to a family.
+## Core Features
 
-**Request:**
-```json
-{
-  "name": "Emma Smith",
-  "age": 8,
-  "family": 1,
-  "preferences": {
-    "favorite_color": "blue",
-    "allergies": ["nuts"]
-  }
-}
+### 1. Dashboard Overview
+- **Net Worth Summary:** Total assets minus liabilities
+- **Account Balances:** Current balances by account type
+- **Monthly Progress:** Net worth changes over time
+- **Recent Transactions:** Latest financial activity
+- **Charts:** Visual representation of financial data
+
+### 2. Account Management
+- **Create/Edit Accounts:** Add new accounts or modify existing ones
+- **Account Types:** Support for various financial account types
+- **Balance Tracking:** Monthly balance snapshots
+- **Account Classification:** Tax-advantaged account identification
+- **Asset Categorization:** Detailed asset type classification
+
+### 3. Transaction Tracking
+- **Income/Expense Recording:** Track all financial transactions
+- **Transaction Categories:** Organized spending and income tracking
+- **Account Linking:** Associate transactions with specific accounts
+- **Transaction History:** Complete financial activity log
+
+### 4. Data Management
+- **Bulk Import:** Import data from CSV/Excel files
+- **Data Export:** Export in CSV, Excel, and PDF formats
+- **Data Validation:** Error checking and duplicate detection
+- **Data Cleanup:** Tools for maintaining data integrity
+
+### 5. Financial Analytics
+- **Net Worth Trends:** Track progress over time
+- **Account Performance:** Individual account analysis
+- **Spending Patterns:** Transaction category analysis
+- **Asset Allocation:** Portfolio breakdown by asset type
+
+## Business Logic
+
+### Net Worth Calculation
+```python
+def calculate_net_worth(user, month=None, year=None):
+    """
+    Calculate total net worth for a user at a specific time period
+    """
+    accounts = Account.objects.filter(user=user, is_active=True)
+    total_assets = 0
+    total_liabilities = 0
+    
+    for account in accounts:
+        balance = account.get_latest_balance(month, year)
+        if account.account_type in ['loan', 'credit']:
+            total_liabilities += abs(balance)
+        else:
+            total_assets += balance
+    
+    return total_assets - total_liabilities
 ```
 
-#### GET /children/{id}/
-Get child details.
+### Data Import Processing
+- **CSV/Excel Parsing:** Flexible file format support
+- **Data Validation:** Check for required fields and data types
+- **Duplicate Detection:** Identify and handle duplicate entries
+- **Error Handling:** Graceful handling of import errors
 
-#### PUT /children/{id}/
-Update child information.
+### Export Functionality
+- **CSV Export:** Raw data export for external analysis
+- **Excel Export:** Formatted reports with charts and summaries
+- **PDF Export:** Professional reports for sharing or printing
 
-#### DELETE /children/{id}/
-Remove child from family.
+## Security Features
 
-### Schedules
+### Authentication & Authorization
+- **User Authentication:** Secure login/logout system
+- **Session Management:** Secure session handling
+- **Permission System:** User-specific data access
+- **CSRF Protection:** Cross-site request forgery prevention
 
-#### GET /schedules/
-Get all schedules for the authenticated user's families.
+### Data Security
+- **Input Validation:** Sanitize all user inputs
+- **SQL Injection Prevention:** Use Django ORM
+- **XSS Protection:** Template auto-escaping
+- **Secure Headers:** Security middleware configuration
 
-**Query Parameters:**
-- `date_from`: Filter schedules from this date (YYYY-MM-DD)
-- `date_to`: Filter schedules to this date (YYYY-MM-DD)
-- `child`: Filter by child ID
-- `family`: Filter by family ID
+## Deployment Architecture
 
-**Response:**
-```json
-{
-  "count": 1,
-  "results": [
-    {
-      "id": 1,
-      "child": {
-        "id": 1,
-        "name": "Emma Smith"
-      },
-      "type": "pickup",
-      "date": "2023-12-01",
-      "time": "15:30:00",
-      "location": {
-        "id": 1,
-        "name": "School",
-        "address": "123 Main St",
-        "coordinates": {
-          "lat": 40.7128,
-          "lng": -74.0060
-        }
-      },
-      "assigned_to": {
-        "id": 1,
-        "first_name": "John",
-        "last_name": "Smith"
-      },
-      "status": "confirmed",
-      "notes": "Pick up from soccer practice"
-    }
-  ]
-}
+### Docker Configuration
+```yaml
+services:
+  web:          # Django application
+  db:           # PostgreSQL database
+  nginx:        # Reverse proxy
+  redis:        # Caching and sessions
 ```
 
-#### POST /schedules/
-Create a new schedule.
+### Environment Configuration
+- **Development:** Local development with SQLite
+- **Docker:** Containerized deployment with PostgreSQL
+- **Production:** Production-optimized settings
 
-**Request:**
-```json
-{
-  "child": 1,
-  "type": "pickup",
-  "date": "2023-12-01",
-  "time": "15:30:00",
-  "location": 1,
-  "assigned_to": 1,
-  "notes": "Pick up from soccer practice"
-}
-```
+### Performance Optimization
+- **Database Indexing:** Optimized queries
+- **Caching:** Redis-based caching
+- **Static Files:** CDN-ready static file serving
+- **Database Connection Pooling:** Efficient database connections
 
-#### GET /schedules/{id}/
-Get schedule details.
+## API Endpoints (Web Interface)
 
-#### PUT /schedules/{id}/
-Update schedule.
+### Dashboard Views
+- `GET /dashboard/` - Main dashboard with net worth overview
+- `GET /dashboard/accounts/` - Account listing and management
+- `GET /dashboard/transactions/` - Transaction listing and management
+- `GET /dashboard/entries/` - Account entries management
 
-#### DELETE /schedules/{id}/
-Delete schedule.
+### Data Management
+- `GET /dashboard/data-management/` - Data import/export interface
+- `POST /dashboard/data-management/` - File upload and processing
+- `GET /dashboard/export/{format}/{data_type}/` - Data export endpoints
 
-### Locations
-
-#### GET /locations/
-Get all locations for the authenticated user's families.
-
-**Response:**
-```json
-{
-  "count": 2,
-  "results": [
-    {
-      "id": 1,
-      "name": "School",
-      "address": "123 Main St",
-      "coordinates": {
-        "lat": 40.7128,
-        "lng": -74.0060
-      },
-      "is_favorite": true,
-      "family": 1
-    }
-  ]
-}
-```
-
-#### POST /locations/
-Add a new location.
-
-**Request:**
-```json
-{
-  "name": "School",
-  "address": "123 Main St",
-  "coordinates": {
-    "lat": 40.7128,
-    "lng": -74.0060
-  },
-  "family": 1
-}
-```
-
-#### GET /locations/{id}/
-Get location details.
-
-#### PUT /locations/{id}/
-Update location.
-
-#### DELETE /locations/{id}/
-Delete location.
-
-### Notifications
-
-#### GET /notifications/
-Get user notifications.
-
-**Query Parameters:**
-- `unread_only`: Filter unread notifications only
-- `type`: Filter by notification type
-
-**Response:**
-```json
-{
-  "count": 1,
-  "results": [
-    {
-      "id": 1,
-      "type": "schedule_reminder",
-      "title": "Pickup Reminder",
-      "message": "Emma's pickup is in 30 minutes",
-      "data": {
-        "schedule_id": 1,
-        "child_name": "Emma"
-      },
-      "is_read": false,
-      "created_at": "2023-12-01T15:00:00Z"
-    }
-  ]
-}
-```
-
-#### POST /notifications/{id}/mark-read/
-Mark notification as read.
-
-#### POST /notifications/mark-all-read/
-Mark all notifications as read.
-
-### Real-time Updates
-
-#### WebSocket Connection
-```
-wss://api.pickupkids.com/ws/
-```
-
-**Authentication:**
-Send JWT token in query parameter:
-```
-wss://api.pickupkids.com/ws/?token=<access_token>
-```
-
-**Message Types:**
-- `schedule_update`: Schedule has been updated
-- `notification`: New notification received
-- `location_update`: Family member location updated
+### User Management
+- `GET /dashboard/settings/` - User settings and preferences
+- `POST /dashboard/settings/` - Update user settings
 
 ## Error Handling
 
-### Error Response Format
-```json
-{
-  "error": "error_code",
-  "message": "Human readable error message",
-  "details": {
-    "field": "Specific field error"
-  }
-}
-```
+### Data Validation
+- **Form Validation:** Django form validation
+- **Model Validation:** Database constraint enforcement
+- **Business Logic Validation:** Custom validation rules
+- **User Feedback:** Clear error messages and guidance
 
-### Common Error Codes
-- `400`: Bad Request
-- `401`: Unauthorized
-- `403`: Forbidden
-- `404`: Not Found
-- `422`: Validation Error
-- `500`: Internal Server Error
+### Exception Handling
+- **Database Errors:** Graceful database error handling
+- **File Processing Errors:** Import/export error management
+- **Authentication Errors:** Secure authentication failure handling
+- **Permission Errors:** Access control enforcement
 
-## Rate Limiting
+## Monitoring and Logging
 
-- **Authentication endpoints:** 5 requests per minute
-- **General endpoints:** 100 requests per minute
-- **WebSocket connections:** 10 connections per user
+### Application Logging
+- **Request Logging:** Track user activity
+- **Error Logging:** Capture and log errors
+- **Performance Monitoring:** Track application performance
+- **Security Logging:** Monitor security events
 
-## Pagination
+### Health Checks
+- **Database Connectivity:** Database health monitoring
+- **Redis Connectivity:** Cache service monitoring
+- **Application Status:** Overall application health
+- **Docker Health Checks:** Container health monitoring
 
-List endpoints support pagination with the following parameters:
-- `page`: Page number (default: 1)
-- `page_size`: Items per page (default: 20, max: 100)
+## Future Enhancements
 
-**Response:**
-```json
-{
-  "count": 100,
-  "next": "https://api.pickupkids.com/v1/schedules/?page=2",
-  "previous": null,
-  "results": [...]
-}
-```
+### Planned Features
+- **Mobile Application:** React Native mobile app
+- **API Endpoints:** RESTful API for external integrations
+- **Real-time Updates:** WebSocket-based real-time data
+- **Advanced Analytics:** Machine learning insights
+- **Multi-user Support:** Family/shared account management
+- **Investment Tracking:** Real-time investment data integration
+- **Budget Planning:** Budget creation and tracking
+- **Goal Setting:** Financial goal management
 
-## Filtering and Sorting
-
-### Filtering
-Most list endpoints support filtering by related fields:
-```
-GET /schedules/?child=1&date_from=2023-12-01
-```
-
-### Sorting
-Sort by any field with `ordering` parameter:
-```
-GET /schedules/?ordering=-date,time
-```
-
-## Webhooks
-
-### Available Webhooks
-- `schedule.created`: New schedule created
-- `schedule.updated`: Schedule updated
-- `schedule.deleted`: Schedule deleted
-- `notification.sent`: Notification sent
-
-### Webhook Payload
-```json
-{
-  "event": "schedule.created",
-  "timestamp": "2023-12-01T15:00:00Z",
-  "data": {
-    "schedule_id": 1,
-    "child_name": "Emma",
-    "date": "2023-12-01"
-  }
-}
-``` 
+### Technical Improvements
+- **Microservices Architecture:** Service decomposition
+- **Event-driven Architecture:** Asynchronous processing
+- **Advanced Caching:** Multi-level caching strategy
+- **Performance Optimization:** Query optimization and indexing
+- **Security Enhancements:** Advanced security features 
