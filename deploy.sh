@@ -54,8 +54,9 @@ fi
 
 # Backup current state (optional)
 print_status "Creating backup of current state..."
-backup_name="backup-$(date +%Y%m%d-%H%M%S)"
-cp -r . ../"$backup_name" 2>/dev/null || print_warning "Could not create backup"
+backup_name="nwt-backup-$(date +%Y%m%d-%H%M%S)"
+mkdir -p ../backup 2>/dev/null || print_warning "Could not create backup directory"
+cp -r . ../backup/"$backup_name" 2>/dev/null || print_warning "Could not create backup"
 
 # Pull latest changes from git
 print_status "Pulling latest changes from git..."
@@ -129,6 +130,12 @@ if [[ "$PROJECT_DIR" == *"net-worth-tracker"* ]]; then
     else
         print_warning "Site might not be responding correctly - check manually"
     fi
+    
+    # Show deployment summary for NetWorth Tracker
+    print_status "Deployment Summary:"
+    print_status "- Site: $SITE_URL"
+    print_status "- Backup: ../backup/$backup_name"
+    print_status "- Latest commit: $(git log -1 --oneline)"
 else
     SITE_URL="https://gen3ric-labs.com"
     print_status "Your changes are now live at $SITE_URL"
@@ -140,6 +147,12 @@ else
     else
         print_warning "Site might not be responding correctly - check manually"
     fi
+    
+    # Show deployment summary for gen3ric-labs
+    print_status "Deployment Summary:"
+    print_status "- Site: $SITE_URL"
+    print_status "- Backup: ../backup/$backup_name"
+    print_status "- Latest commit: $(git log -1 --oneline)"
 fi
 
 echo ""
