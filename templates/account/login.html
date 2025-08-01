@@ -1,4 +1,4 @@
-{% load socialaccount %}
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -89,47 +89,25 @@
                     </p>
                     <p class="mb-0">
                         Don't have an account? 
-                        <a href="{% url 'account_signup' %}">Sign up</a>
+                        <a href="{% url 'dashboard:signup_disabled' %}">Sign-ups Temporarily Disabled</a>
                     </p>
                 </div>
             </div>
             
-            <!-- Right Section - Social Login -->
+            <!-- Right Section - Disabled Social Login -->
             <div class="login-right">
                 <div class="social-section">
-                    <h2 class="social-title">Continue with</h2>
-                    
-                    {% get_providers as socialaccount_providers %}
-                    
-                    {% if socialaccount_providers %}
-                        <div class="social-buttons">
-                            {% for provider in socialaccount_providers %}
-                                {% if provider.id == "google" %}
-                                    <a href="{% provider_login_url provider %}" class="btn btn-google">
-                                        <i class="bi bi-google"></i>
-                                        Continue with Google
-                                    </a>
-                                {% elif provider.id == "facebook" %}
-                                    <a href="{% provider_login_url provider %}" class="btn btn-facebook">
-                                        <i class="bi bi-facebook"></i>
-                                        Continue with Facebook
-                                    </a>
-                                {% elif provider.id == "apple" %}
-                                    <a href="{% provider_login_url provider %}" class="btn btn-apple">
-                                        <i class="bi bi-apple"></i>
-                                        Continue with Apple
-                                    </a>
-                                {% else %}
-                                    <a href="{% provider_login_url provider %}" class="btn btn-outline-primary">
-                                        <i class="bi bi-person-circle"></i>
-                                        Continue with {{ provider.name }}
-                                    </a>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-muted">No social login providers configured.</p>
-                    {% endif %}
+                    <h2 class="social-title">Sign-ups Temporarily Disabled</h2>
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Maintenance Mode</strong><br>
+                        We're currently performing maintenance and improvements. Social logins and new sign-ups are temporarily disabled.
+                    </div>
+                    <div class="text-center">
+                        <a href="{% url 'dashboard:signup_disabled' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-gear me-2"></i>Learn More
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
