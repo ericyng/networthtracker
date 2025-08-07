@@ -1,0 +1,220 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Dashboard - Net Worth Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-tachometer-alt me-2"></i>
+        Dashboard
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{% url 'dashboard:analytics' %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-chart-line me-1"></i>View Analytics
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Net Worth Overview -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="metric-value">${{ net_worth|floatformat:0 }}</div>
+                <div class="metric-label">Net Worth</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="metric-value">${{ total_assets|floatformat:0 }}</div>
+                <div class="metric-label">Total Assets</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="metric-value">${{ total_liabilities|floatformat:0 }}</div>
+                <div class="metric-label">Total Liabilities</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Account Balances Chart -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Account Balances
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="accountBalancesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity and Quick Actions -->
+<div class="row">
+    <!-- Recent Transactions -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Recent Transactions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Account</th>
+                                <th>Description</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>{{ transaction.date|date:"M d, Y" }}</td>
+                                <td>{{ transaction.account.name }}</td>
+                                <td>{{ transaction.description|truncatechars:30 }}</td>
+                                <td>
+                                    <span class="badge bg-{% if transaction.transaction_type == 'income' %}success{% elif transaction.transaction_type == 'expense' %}danger{% else %}warning{% endif %}">
+                                        {{ transaction.transaction_type|title }}
+                                    </span>
+                                </td>
+                                <td class="text-{% if transaction.transaction_type == 'income' %}success{% elif transaction.transaction_type == 'expense' %}danger{% else %}warning{% endif %}">
+                                    ${{ transaction.amount|floatformat:2 }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No recent transactions</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'dashboard:transactions_list' %}" class="btn btn-outline-primary btn-sm">
+                        View All Transactions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'dashboard:accounts_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-university me-2"></i>
+                        Manage Accounts
+                    </a>
+                    <a href="{% url 'dashboard:transactions_list' %}" class="btn btn-outline-success">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        View Transactions
+                    </a>
+                    <a href="{% url 'dashboard:analytics' %}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Financial Analytics
+                    </a>
+                    <a href="{% url 'dashboard:settings' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-cog me-2"></i>
+                        Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Account Summary -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-university me-2"></i>
+                    Account Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h5 text-primary">{{ accounts.count }}</div>
+                            <small class="text-muted">Total Accounts</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h5 text-success">{{ accounts|length }}</div>
+                            <small class="text-muted">Active Accounts</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Parse account balances data from Django context
+const accountBalancesData = {{ account_balances|safe }};
+
+// Account Balances Chart
+const accountBalancesCtx = document.getElementById('accountBalancesChart').getContext('2d');
+new Chart(accountBalancesCtx, {
+    type: 'doughnut',
+    data: {
+        labels: accountBalancesData.map(item => item.name),
+        datasets: [{
+            data: accountBalancesData.map(item => item.balance),
+            backgroundColor: accountBalancesData.map(item => item.color),
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed || 0;
+                        return label + ': $' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

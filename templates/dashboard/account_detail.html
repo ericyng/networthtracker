@@ -1,0 +1,193 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{{ account.name }} - Net Worth Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-university me-2"></i>
+        {{ account.name }}
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" disabled>
+                <i class="fas fa-edit me-1"></i>Edit
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Account Overview -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Account Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Type:</strong><br>
+                        <span class="badge bg-primary">{{ account.account_type|title }}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Classification:</strong><br>
+                        <span class="badge bg-secondary">{{ account.classification|title }}</span>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Asset Type:</strong><br>
+                        <span class="badge bg-info">{{ account.asset_type|title }}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Currency:</strong><br>
+                        <span class="badge bg-light text-dark">{{ account.currency }}</span>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <strong>Institution:</strong><br>
+                        <span class="text-muted">{{ account.institution|default:"Not specified" }}</span>
+                    </div>
+                </div>
+                {% if account.account_number %}
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <strong>Account Number:</strong><br>
+                        <span class="text-muted">{{ account.account_number }}</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Current Balance
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="h1 text-primary mb-3">${{ account.get_latest_balance|floatformat:2 }}</div>
+                <p class="text-muted">Latest balance</p>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="h5 text-success">{{ entries.count }}</div>
+                        <small class="text-muted">Balance Entries</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h5 text-info">{{ transactions.count }}</div>
+                        <small class="text-muted">Transactions</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Balance History -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Balance History
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Period</th>
+                                <th>Balance</th>
+                                <th>Notes</th>
+                                <th>Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in entries %}
+                            <tr>
+                                <td>{{ entry.month }}/{{ entry.year }}</td>
+                                <td class="fw-bold">${{ entry.balance|floatformat:2 }}</td>
+                                <td>{{ entry.notes|default:"-" }}</td>
+                                <td>{{ entry.updated_at|date:"M d, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No balance entries found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exchange-alt me-2"></i>
+                    Recent Transactions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                            <tr>
+                                <td>{{ transaction.date|date:"M d, Y" }}</td>
+                                <td>{{ transaction.description }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        {{ transaction.category|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if transaction.transaction_type == 'income' %}success{% elif transaction.transaction_type == 'expense' %}danger{% else %}warning{% endif %}">
+                                        {{ transaction.transaction_type|title }}
+                                    </span>
+                                </td>
+                                <td class="text-{% if transaction.transaction_type == 'income' %}success{% elif transaction.transaction_type == 'expense' %}danger{% else %}warning{% endif %} fw-bold">
+                                    ${{ transaction.amount|floatformat:2 }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No transactions found for this account</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

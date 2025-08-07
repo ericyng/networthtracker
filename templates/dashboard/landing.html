@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Net Worth Tracker - Track Your Financial Progress</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 0;
+        }
+        .feature-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-chart-line me-2"></i>
+                Net Worth Tracker
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{% url 'account_login' %}">Login</a>
+                <a class="nav-link" href="{% url 'account_signup' %}">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container text-center">
+            <h1 class="display-4 mb-4">Track Your Financial Journey</h1>
+            <p class="lead mb-4">Monitor your net worth, analyze spending patterns, and achieve your financial goals with our comprehensive tracking tools.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'account_signup' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Get Started Free
+                </a>
+                <a href="{% url 'account_login' %}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-sign-in-alt me-2"></i>
+                    Sign In
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-12">
+                    <h2 class="mb-4">Why Choose Net Worth Tracker?</h2>
+                    <p class="lead text-muted">Comprehensive financial tracking and analytics to help you make informed decisions.</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 text-center">
+                        <div class="card-body">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h5 class="card-title">Net Worth Tracking</h5>
+                            <p class="card-text">Monitor your total net worth over time with detailed charts and insights.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 text-center">
+                        <div class="card-body">
+                            <div class="feature-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <h5 class="card-title">Account Management</h5>
+                            <p class="card-text">Track multiple accounts including checking, savings, investments, and loans.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 text-center">
+                        <div class="card-body">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <h5 class="card-title">Financial Analytics</h5>
+                            <p class="card-text">Advanced analytics including spending patterns, savings rates, and financial ratios.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 text-center">
+                        <div class="card-body">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h5 class="card-title">Secure & Private</h5>
+                            <p class="card-text">Your financial data is encrypted and secure. We never share your information.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 text-center">
+                        <div class="card-body">
+                            <div class="feature-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <h5 class="card-title">Mobile Friendly</h5>
+                            <p class="card-text">Access your financial data anywhere with our responsive web interface.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 text-center">
+                        <div class="card-body">
+                            <div class="feature-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <h5 class="card-title">Export & Backup</h5>
+                            <p class="card-text">Export your data in multiple formats including CSV, Excel, and PDF.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="bg-light py-5">
+        <div class="container text-center">
+            <h2 class="mb-4">Ready to Start Tracking Your Net Worth?</h2>
+            <p class="lead mb-4">Join thousands of users who are already taking control of their financial future.</p>
+            <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-rocket me-2"></i>
+                Start Your Free Account
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Net Worth Tracker</h5>
+                    <p class="text-muted">Track your financial progress and achieve your goals.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted">&copy; 2024 Net Worth Tracker. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

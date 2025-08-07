@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-n)jm(8%+r!%@n=orrp_*phr3x)boib1@(9==#0=k$-1fr2nj%*'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-n)jm(8%+r!%@n=orrp_*phr3x)boib1@(9==#0=k$-1fr2nj%*')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ['net-worth-tracker.gen3ric-labs.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -129,94 +130,63 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Security settings for production
-SECURE_SSL_REDIRECT = True
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
-SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
-
-# Session security
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Email configuration for development
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 1025
-EMAIL_USE_TLS = False
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
-DEFAULT_FROM_EMAIL = 'noreply@networthtracker.com'
-
-# Add site ID for django-allauth
-SITE_ID = 1
-
-# Authentication backends for allauth
+# Django Allauth Configuration
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-# allauth settings (basic)
-ACCOUNT_LOGIN_METHODS = {'username', 'email'}
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
-ACCOUNT_EMAIL_VERIFICATION = 'optional'
-LOGIN_REDIRECT_URL = '/'
+SITE_ID = 1
 
-# Disable sign-ups temporarily
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_ADAPTER = 'users.adapters.CustomAccountAdapter'
 SOCIALACCOUNT_ADAPTER = 'users.adapters.CustomSocialAccountAdapter'
 
-# Social authentication settings
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
+# Email settings (configure for production)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Login/Logout URLs
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Security settings
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'django.log',
+        },
     },
-    'facebook': {
-        'METHOD': 'oauth2',
-        'SCOPE': ['email', 'public_profile'],
-        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
-        'INIT_PARAMS': {'cookie': True},
-        'FIELDS': [
-            'id',
-            'first_name',
-            'last_name',
-            'middle_name',
-            'name',
-            'name_format',
-            'picture',
-            'short_name'
-        ],
-        'EXCHANGE_TOKEN': True,
-        'LOCALE_FUNC': 'path.to.callable',
-        'VERIFIED_EMAIL': False,
-        'VERSION': 'v13.0',
+    'root': {
+        'handlers': ['file'],
+        'level': 'INFO',
     },
-    'apple': {
-        'APP': {
-            'client_id': 'your.apple.client.id',
-            'secret': 'your.apple.secret',
-            'key': 'your.apple.key',
-        }
-    }
 }
+
+# Create logs directory if it doesn't exist
+os.makedirs(BASE_DIR / 'logs', exist_ok=True)

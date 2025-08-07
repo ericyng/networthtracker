@@ -1,0 +1,456 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Analytics - Net Worth Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-chart-line me-2"></i>
+        Financial Analytics
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportAnalytics()">
+                <i class="fas fa-download me-1"></i>Export
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Key Metrics Row -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="metric-value">${{ financial_ratios.net_worth|floatformat:0 }}</div>
+                <div class="metric-label">Net Worth</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="metric-value">{{ savings_rate.savings_rate|floatformat:1 }}%</div>
+                <div class="metric-label">Savings Rate</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="metric-value">{{ financial_ratios.emergency_fund_ratio|floatformat:1 }}x</div>
+                <div class="metric-label">Emergency Fund</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card metric-card">
+            <div class="card-body text-center">
+                <div class="metric-value">{{ financial_ratios.asset_diversity }}</div>
+                <div class="metric-label">Asset Types</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="row mb-4">
+    <!-- Net Worth Trends -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-area me-2"></i>
+                    Net Worth Trends (Last 12 Months)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="netWorthChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Asset Allocation -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Asset Allocation
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="assetAllocationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="row mb-4">
+    <!-- Income vs Expenses -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Income vs Expenses (Last 6 Months)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="incomeExpensesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Spending by Category -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-doughnut me-2"></i>
+                    Spending by Category
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="spendingCategoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Financial Ratios and Recent Activity -->
+<div class="row mb-4">
+    <!-- Financial Ratios -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-calculator me-2"></i>
+                    Financial Ratios
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-center mb-3">
+                            <div class="h4 text-primary">{{ financial_ratios.debt_to_income|floatformat:1 }}%</div>
+                            <small class="text-muted">Debt-to-Income</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center mb-3">
+                            <div class="h4 text-success">{{ financial_ratios.emergency_fund_ratio|floatformat:1 }}x</div>
+                            <small class="text-muted">Emergency Fund</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-center mb-3">
+                            <div class="h4 text-info">{{ financial_ratios.asset_diversity }}</div>
+                            <small class="text-muted">Asset Types</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center mb-3">
+                            <div class="h4 text-warning">{{ savings_rate.savings_rate|floatformat:1 }}%</div>
+                            <small class="text-muted">Savings Rate</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Recent Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_activity.transactions %}
+                            <tr>
+                                <td>{{ transaction.date|date:"M d" }}</td>
+                                <td>
+                                    <span class="badge bg-{% if transaction.transaction_type == 'income' %}success{% elif transaction.transaction_type == 'expense' %}danger{% else %}warning{% endif %}">
+                                        {{ transaction.transaction_type|title }}
+                                    </span>
+                                </td>
+                                <td>{{ transaction.description|truncatechars:30 }}</td>
+                                <td class="text-{% if transaction.transaction_type == 'income' %}success{% elif transaction.transaction_type == 'expense' %}danger{% else %}warning{% endif %}">
+                                    ${{ transaction.amount|floatformat:2 }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No recent transactions</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Account Performance -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Account Performance (Last 6 Months)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="accountPerformanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Parse JSON data from Django context
+const netWorthData = {{ net_worth_data|safe }};
+const assetAllocationData = {{ asset_allocation|safe }};
+const incomeExpensesData = {{ income_expenses|safe }};
+const spendingCategoryData = {{ spending_by_category|safe }};
+const accountPerformanceData = {{ account_performance|safe }};
+
+// Net Worth Trends Chart
+const netWorthCtx = document.getElementById('netWorthChart').getContext('2d');
+new Chart(netWorthCtx, {
+    type: 'line',
+    data: {
+        labels: netWorthData.map(item => item.date),
+        datasets: [{
+            label: 'Net Worth',
+            data: netWorthData.map(item => item.net_worth),
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Assets',
+            data: netWorthData.map(item => item.assets),
+            borderColor: '#4BC0C0',
+            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+            tension: 0.4,
+            fill: false
+        }, {
+            label: 'Liabilities',
+            data: netWorthData.map(item => item.liabilities),
+            borderColor: '#FF6384',
+            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+            tension: 0.4,
+            fill: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '$' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Asset Allocation Chart
+const assetAllocationCtx = document.getElementById('assetAllocationChart').getContext('2d');
+new Chart(assetAllocationCtx, {
+    type: 'doughnut',
+    data: {
+        labels: assetAllocationData.map(item => item.label),
+        datasets: [{
+            data: assetAllocationData.map(item => item.value),
+            backgroundColor: assetAllocationData.map(item => item.color),
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            }
+        }
+    }
+});
+
+// Income vs Expenses Chart
+const incomeExpensesCtx = document.getElementById('incomeExpensesChart').getContext('2d');
+new Chart(incomeExpensesCtx, {
+    type: 'bar',
+    data: {
+        labels: incomeExpensesData.labels,
+        datasets: [{
+            label: 'Income',
+            data: incomeExpensesData.income,
+            backgroundColor: '#4BC0C0',
+            borderColor: '#4BC0C0',
+            borderWidth: 1
+        }, {
+            label: 'Expenses',
+            data: incomeExpensesData.expenses,
+            backgroundColor: '#FF6384',
+            borderColor: '#FF6384',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '$' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Spending by Category Chart
+const spendingCategoryCtx = document.getElementById('spendingCategoryChart').getContext('2d');
+new Chart(spendingCategoryCtx, {
+    type: 'pie',
+    data: {
+        labels: spendingCategoryData.map(item => item.label),
+        datasets: [{
+            data: spendingCategoryData.map(item => item.value),
+            backgroundColor: spendingCategoryData.map(item => item.color),
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            }
+        }
+    }
+});
+
+// Account Performance Chart
+const accountPerformanceCtx = document.getElementById('accountPerformanceChart').getContext('2d');
+const accountLabels = accountPerformanceData.map(item => item.account_name);
+const accountDatasets = [];
+
+// Create datasets for each account
+accountPerformanceData.forEach((account, index) => {
+    const colors = ['#667eea', '#4BC0C0', '#FFCE56', '#FF6384', '#9966FF', '#FF9F40'];
+    accountDatasets.push({
+        label: account.account_name,
+        data: account.balances,
+        borderColor: colors[index % colors.length],
+        backgroundColor: colors[index % colors.length] + '20',
+        tension: 0.4,
+        fill: false
+    });
+});
+
+new Chart(accountPerformanceCtx, {
+    type: 'line',
+    data: {
+        labels: ['6 months ago', '5 months ago', '4 months ago', '3 months ago', '2 months ago', '1 month ago'],
+        datasets: accountDatasets
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '$' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Export function
+function exportAnalytics() {
+    // Create a temporary link to download the analytics data
+    const data = {
+        netWorthData: netWorthData,
+        assetAllocation: assetAllocationData,
+        incomeExpenses: incomeExpensesData,
+        spendingCategory: spendingCategoryData,
+        accountPerformance: accountPerformanceData,
+        financialRatios: {{ financial_ratios|safe }},
+        savingsRate: {{ savings_rate|safe }}
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analytics-data.json';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

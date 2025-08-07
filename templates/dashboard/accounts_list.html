@@ -1,0 +1,69 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Accounts - Net Worth Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-university me-2"></i>
+        My Accounts
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" disabled>
+                <i class="fas fa-plus me-1"></i>Add Account
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% for account in accounts %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title mb-0">{{ account.name }}</h5>
+                    <span class="badge bg-{% if account.is_active %}success{% else %}secondary{% endif %}">
+                        {{ account.account_type|title }}
+                    </span>
+                </div>
+                <p class="card-text text-muted small">
+                    <i class="fas fa-building me-1"></i>
+                    {{ account.institution|default:"No institution" }}
+                </p>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h5 text-primary">${{ account.get_latest_balance|floatformat:2 }}</div>
+                        <small class="text-muted">Current Balance</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h6 text-muted">{{ account.classification|title }}</div>
+                        <small class="text-muted">Classification</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">{{ account.asset_type|title }}</small>
+                    <a href="{% url 'dashboard:account_detail' account.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye me-1"></i>View
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-university fa-3x text-muted mb-3"></i>
+            <h4>No Accounts Found</h4>
+            <p class="text-muted">You haven't added any accounts yet.</p>
+            <button class="btn btn-primary" disabled>
+                <i class="fas fa-plus me-2"></i>Add Your First Account
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

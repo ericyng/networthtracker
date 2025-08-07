@@ -126,4 +126,4 @@ class AccountEntry(models.Model):
         unique_together = ['account', 'month', 'year']
     
     def __str__(self):
-        return f"{self.account.name} - {self.month}/{self.year}: ${self.balance}"
+        return f"{self.account.name} - {self.month}/{self.year}: {self.balance}"
